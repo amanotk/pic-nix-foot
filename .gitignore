@@ -1,0 +1,11 @@
+compiler.mk
+*.o
+*.d
+*.a
+*.out
+*.data
+*.mp4
+*.stdout
+*.stderr
+build
+__pycache__

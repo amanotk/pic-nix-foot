@@ -44,7 +44,7 @@ public:
     float64 betae = config["betae"].get<float64>();
     float64 betai = config["betai"].get<float64>();
     float64 betar = config["betar"].get<float64>();
-    float64 mele  = (delh * delh * delh) / nppc;
+    float64 mele  = 1.0 / nppc;
     float64 qele  = -wp * mele;
     float64 mion  = mele * mime;
     float64 qion  = -qele;
@@ -57,18 +57,16 @@ public:
     float64 vdi   = -vai * mach * alpha;
     float64 vdr   = +vai * mach * (1 - alpha);
 
-    // grid size in each direction
-    delx = delh;
-    dely = delh;
-    delz = delh;
+    // set grid size and coordinate
+    set_coordinate(delh, delh, delh);
 
     //
     // initialize field
     //
     {
-      float64 Bx = b0 * cos(theta / 180 * nix::math::pi2);
+      float64 Bx = b0 * cos(theta / 180 * nix::math::pi);
       float64 By = 0;
-      float64 Bz = b0 * sin(theta / 180 * nix::math::pi2);
+      float64 Bz = b0 * sin(theta / 180 * nix::math::pi);
 
       // memory allocation
       allocate();
@@ -114,6 +112,9 @@ public:
         } else {
           tfm::format(std::cerr, "Error: invalid seed_type\n");
         }
+
+        mtp.seed(random_seed);
+        mtv.seed(random_seed);
       }
 
       {

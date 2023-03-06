@@ -17,23 +17,21 @@ This setup models the dynamics of a collisionless shock transition layer with a 
 - `betar` : reflected ion plasma beta $\beta_r = 2 v_{th,r}^2/V_{A,i}^2$
 
 The ambient magnetic feld is normalized to unity $B_0 = 1$. The three components of the ambient magnetic field are given by
-$$
+```math
 \begin{aligned}
 B_{0,x} &= B_0 \cos \theta \\
 B_{0,y} &= B_0 \sin \theta \cos \phi \\
 B_{0,z} &= B_0 \sin \theta \sin \phi
 \end{aligned}
-$$
-
+```
 With these parameters, the core and reflected ion drift velocities are given by
-$$
+```math
 \begin{aligned}
 	V_{d,i}/V_{A,i} &= - M_A \alpha, \\
 	V_{d,r}/V_{A,r} &= + M_A (1 - \alpha).
 \end{aligned}
-$$
-These drift velocities are always parallel to the x axis.
-
+```
+These drift velocities are always parallel to the x axis.  
 Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sqrt{n_0 m_e}$ and $V_{A,i} = B_0 / \sqrt{n_0 m_i}$, respectively.
 
 # References

@@ -19,7 +19,7 @@ public:
 
     // check validity of assumptions
     {
-      constexpr int     Ns_mustbe = 2;
+      constexpr int Ns_mustbe = 2;
 
       Ns = config["Ns"].get<int>();
 
@@ -39,13 +39,14 @@ public:
     float64 mime  = config["mime"].get<float64>();
     float64 mach  = config["mach"].get<float64>();
     float64 theta = config["theta"].get<float64>();
+    float64 phi   = config["phi"].get<float64>();
     float64 sigma = config["sigma"].get<float64>();
     float64 alpha = config["alpha"].get<float64>();
     float64 betae = config["betae"].get<float64>();
     float64 betai = config["betai"].get<float64>();
     float64 betar = config["betar"].get<float64>();
-    float64 mele  = 1.0 / nppc;
-    float64 qele  = -wp * mele;
+    float64 mele  = 1.0 / (sigma * nppc);
+    float64 qele  = -wp * sqrt(sigma) * mele;
     float64 mion  = mele * mime;
     float64 qion  = -qele;
     float64 b0    = cc * sqrt(sigma) / std::abs(qele / mele);
@@ -65,8 +66,8 @@ public:
     //
     {
       float64 Bx = b0 * cos(theta / 180 * nix::math::pi);
-      float64 By = 0;
-      float64 Bz = b0 * sin(theta / 180 * nix::math::pi);
+      float64 By = b0 * sin(theta / 180 * nix::math::pi) * cos(phi / 180 * nix::math::pi);
+      float64 Bz = b0 * sin(theta / 180 * nix::math::pi) * sin(phi / 180 * nix::math::pi);
 
       // memory allocation
       allocate();

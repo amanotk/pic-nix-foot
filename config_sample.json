@@ -32,7 +32,7 @@
 			"name": "particle",
 			"path": ".",
 			"prefix": "particle",
-			"interval": 2000,
+			"interval": 5000,
 			"options": null
 		}
 	],

@@ -24,7 +24,7 @@ public:
       Ns = config["Ns"].get<int>();
 
       if (Ns != Ns_mustbe) {
-        ERRORPRINT("Assumption of Ns = 2 is violated\n");
+        ERROR << "Assumption of Ns = 2 is violated";
         exit(-1);
       }
     }
@@ -111,7 +111,7 @@ public:
         } else if (seed_type == "chunkid") {
           random_seed = this->myid; // chunk ID
         } else {
-          tfm::format(std::cerr, "Error: invalid seed_type\n");
+          ERROR << tfm::format("Ignoring invalid seed_type: %s", seed_type);
         }
 
         mtp.seed(random_seed);

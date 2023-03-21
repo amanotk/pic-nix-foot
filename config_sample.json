@@ -1,15 +1,16 @@
 {
 	"application": {
-		"debug": false,
 		"log": {
 			"path": ".",
 			"prefix": "log",
-			"interval": 10.0,
-			"level": 0,
+			"interval": 5000,
 			"options": null
 		},
 		"rebuild": {
 			"interval": 10,
+			"loglevel": 1,
+			"prefix": "rebuild",
+			"path": ".",
 			"options": null
 		}
 	},
@@ -18,14 +19,14 @@
 			"name": "history",
 			"path": ".",
 			"prefix": "history",
-			"interval": 200,
+			"interval": 500,
 			"options": null
 		},
 		{
 			"name": "field",
 			"path": ".",
 			"prefix": "field",
-			"interval": 200,
+			"interval": 500,
 			"options": null
 		},
 		{

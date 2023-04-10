@@ -78,11 +78,20 @@ Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sq
 ## `aflven`
 An ion beam propagating parallel to the ambient magnetic field can generate an Alfven wave via the cyclotron resonance.  
 The subdirectory `alfven` provides an example setup for this problem in 1D.  
-After executin the simulation, you can run the following command on the same directory to generate plots to examine the simulation results:
+
+Go to `alfven` directory:
+```
+$ cd alfven
+```
+and run the coe, for instance, via:
+```
+$ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.json
+```
+Then, run the following command on the same directory to generate plots to examine the simulation results:
 ```
 $ python batch.py profile.msgpack
 ```
-For details, see, Hoshino & Terasawa (1985).
+For details of the problem, see, Hoshino & Terasawa (1985).
 
 
 # References

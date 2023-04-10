@@ -369,7 +369,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     profile = args.profile[0]
-    prefix = args.prefix
-    fps = args.fps
-    cleanup = args.cleanup
-    doit_job(profile, prefix, fps, cleanup)
+    doit_job(profile, args.prefix, args.fps, args.cleanup)

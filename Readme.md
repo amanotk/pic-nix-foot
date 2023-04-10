@@ -8,8 +8,8 @@ This setup models the dynamics of a collisionless shock transition layer with a 
 - `wp` : electron plasma frequency $\omega_{pe}$
 - `mime` : ion-to-electron mass ratio $m_i/m_e$
 - `mach` : Alfven Mach number $M_A$
-- `theta` : polar angle of the ambient magnetic field with respect to the x axis
-- `phi` : azimuthul angle of the ambient magnetic field with respect to the x axis
+- `theta` : polar angle of the ambient magnetic field with respect to the x axis $\theta$
+- `phi` : azimuthul angle of the ambient magnetic field with respect to the x axis $\phi$
 - `sigma` : electron cyclotron-to-plasma frequency squared $\sigma = \Omega_{ce}^2/\omega_{pe}^2$
 - `alpha` : density of the reflected ion beam normalized to the total density $\alpha = n_r/n_0$
 - `betae` : electron plasma beta $\beta_e = 2 v_{th,e}^2/V_{A,e}^2$

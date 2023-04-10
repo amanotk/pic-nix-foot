@@ -2,8 +2,48 @@
 
 This setup models the dynamics of a collisionless shock transition layer with a three-component homogeneous plasma with the periodic boundary condition in all three directions. The system consists of the reflected ions, the incoming core (upstream) ions and the background electrons, all represented by isotropic Maxwellian distributions in the rest frame of each component. The simulation frame corresponds to the rest frame of electrons.
 
-# Physical Parameters
+# Compiling and Executing the Code
 
+## Clone Repositories
+Clone repositories to local directory via:
+```
+$ git clone git@github.com:amanotk/pic-nix.git
+$ git clone git@github.com:amanotk/pic-nix-foot.git
+$ export PICNIX_DIR=${PWD}/pic-nix
+```
+The environment variable `PICNIX_DIR` will be used to compile the code and also as a search path for running diagnostic python scripts.
+
+## Compile
+A proper C++ compiler and its compiler flags should be specified with `cmake`.  
+The following example assumes `mpicxx` as a compiler with OpenMP enabled.
+```
+$ cd pic-nix-foot
+$ mkdir build
+$ cd build
+$ cmake .. \
+	-DPICNIX_DIR=${PICNIX_DIR} \
+	-DCMAKE_CXX_COMPILER=mpicxx \
+	-DCMAKE_CXX_FLAGS="-O3 -fopenmp"
+$ make
+```
+You will find `main.out` as an executable in the working directory.
+
+## Run
+You can now execute `main.out` using `mpiexec` (or `mpirun`). Here is an example:
+```
+$ export OMP_NUM_THREADS=4
+$ mpiexec -n 4 ./main.out -e 86400 -t 100 -c config.json
+```
+Some options are:
+- `-c` or `--config` : configuration file
+- `-t` or `--tmax`   : maximum physical time in simulation unit (default 1.79769e+308)
+- `-e` or `--emax`   : maximum elapsed time in sec (default 3600)
+
+Note that you may specify the environment variable `OMP_NUM_THREADS` to control the number of threads per process for OpenMP parallelization.
+
+
+# Physical Parameters
+The following parameters should be defined in the confirugation file:
 - `cc` : speed of light $c$
 - `wp` : electron plasma frequency $\omega_{pe}$
 - `mime` : ion-to-electron mass ratio $m_i/m_e$
@@ -33,6 +73,17 @@ With these parameters, the core and reflected ion drift velocities are given by
 ```
 These drift velocities are always parallel to the x axis.  
 Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sqrt{n_0 m_e}$ and $V_{A,i} = B_0 / \sqrt{n_0 m_i}$, respectively.
+
+# Examples
+## `aflven`
+An ion beam propagating parallel to the ambient magnetic field can generate an Alfven wave via the cyclotron resonance.  
+The subdirectory `alfven` provides an example setup for this problem in 1D.  
+After executin the simulation, you can run the following command on the same directory to generate plots to examine the simulation results:
+```
+$ python batch.py profile.msgpack
+```
+For details, see, Hoshino & Terasawa (1985).
+
 
 # References
 - <div class="csl-entry">Hoshino, M., &#38; Terasawa, T. (1985). Numerical Study of the Upstream Wave Excitation Mechanism, 1. Nonlinear Phase Bunching of Beam Ions. <i>Journal of Geophysical Research</i>, <i>90</i>(A1), 57–64. https://doi.org/10.1029/JA090iA01p00057</div>

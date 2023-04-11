@@ -43,6 +43,9 @@ Not only this repository, you also need to clone [pic-nix](https://github.com/am
 For instance, clone the two repositories on the same directory as follows:
 ```
 $ git clone git@github.com:amanotk/pic-nix.git
+$ cd pic-nix
+$ git submodule update --init
+$ cd ..
 $ git clone git@github.com:amanotk/pic-nix-foot.git
 ```
 

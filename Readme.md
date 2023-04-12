@@ -1,45 +1,5 @@
 # About
-
 This setup models the dynamics of a collisionless shock transition layer with a three-component homogeneous plasma with the periodic boundary condition in all three directions. The system consists of the reflected ions, the incoming core (upstream) ions and the background electrons, all represented by isotropic Maxwellian distributions in the rest frame of each component. The simulation frame corresponds to the rest frame of electrons.
-
-# Compiling and Executing the Code
-
-## Clone Repositories
-Clone repositories to local directory via:
-```
-$ git clone git@github.com:amanotk/pic-nix.git
-$ git clone git@github.com:amanotk/pic-nix-foot.git
-$ export PICNIX_DIR=${PWD}/pic-nix
-```
-The environment variable `PICNIX_DIR` will be used to compile the code and also as a search path for running diagnostic python scripts.
-
-## Compile
-A proper C++ compiler and its compiler flags should be specified with `cmake`.  
-The following example assumes `mpicxx` as a compiler with OpenMP enabled.
-```
-$ cd pic-nix-foot
-$ mkdir build
-$ cd build
-$ cmake .. \
-	-DPICNIX_DIR=${PICNIX_DIR} \
-	-DCMAKE_CXX_COMPILER=mpicxx \
-	-DCMAKE_CXX_FLAGS="-O3 -fopenmp"
-$ make
-```
-You will find `main.out` as an executable in the working directory.
-
-## Run
-You can now execute `main.out` using `mpiexec` (or `mpirun`). Here is an example:
-```
-$ export OMP_NUM_THREADS=4
-$ mpiexec -n 4 ./main.out -e 86400 -t 100 -c config.json
-```
-Some options are:
-- `-c` or `--config` : configuration file
-- `-t` or `--tmax`   : maximum physical time in simulation unit (default 1.79769e+308)
-- `-e` or `--emax`   : maximum elapsed time in sec (default 3600)
-
-Note that you may specify the environment variable `OMP_NUM_THREADS` to control the number of threads per process for OpenMP parallelization.
 
 
 # Physical Parameters
@@ -74,10 +34,40 @@ With these parameters, the core and reflected ion drift velocities are given by
 These drift velocities are always parallel to the x axis.  
 Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sqrt{n_0 m_e}$ and $V_{A,i} = B_0 / \sqrt{n_0 m_i}$, respectively.
 
-# Examples
-## `aflven`
+
+# Compiling and Executing the Code
+The procedure is very similar to the description available [here](https://github.com/amanotk/pic-nix).
+
+## Clone
+Not only this repository, you also need to clone [pic-nix](https://github.com/amanotk/pic-nix).
+For instance, clone the two repositories on the same directory as follows:
+```
+$ git clone git@github.com:amanotk/pic-nix.git
+$ cd pic-nix
+$ git submodule update --init
+$ cd ..
+$ git clone git@github.com:amanotk/pic-nix-foot.git
+```
+
+## Compile
+Compile the code to obtain an executable `main.out` in the working directory as follows:
+```
+$ export PICNIX_DIR=${PWD}/pic-nix
+$ cd pic-nix-foot
+$ mkdir build
+$ cd build
+$ cmake .. \
+	-DPICNIX_DIR=${PICNIX_DIR} \
+	-DCMAKE_CXX_COMPILER=mpicxx \
+	-DCMAKE_CXX_FLAGS="-O3 -fopenmp"
+$ make
+```
+The environment variable `PICNIX_DIR` should be set to the path to [pic-nix](https://github.com/amanotk/pic-nix) directory.
+
+## Run
+### Example: `aflven`
 An ion beam propagating parallel to the ambient magnetic field can generate an Alfven wave via the cyclotron resonance.  
-The subdirectory `alfven` provides an example setup for this problem in 1D.  
+The directory `alfven` provides an example setup for this problem in 1D.  
 
 Go to `alfven` directory:
 ```
@@ -85,6 +75,7 @@ $ cd alfven
 ```
 and run the coe, for instance, via:
 ```
+$ export OMP_NUM_THREADS=2
 $ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.json
 ```
 Then, run the following command on the same directory to generate plots to examine the simulation results:

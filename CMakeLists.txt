@@ -27,3 +27,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PICNIX_DIR})
 
 # link library
 target_link_libraries(${PROJECT_NAME} nix expic)
+
+# copy
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alfven DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

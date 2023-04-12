@@ -29,6 +29,7 @@ class Run(analysis.Run):
         # read and store all data
         Nstep = len(self.file_field)
         parameter = self.config["parameter"]
+        Ns = parameter["Ns"]
         Nx = parameter["Nx"]
         Ny = parameter["Ny"]
         Nz = parameter["Nz"]
@@ -42,7 +43,7 @@ class Run(analysis.Run):
         wci = wp * np.sqrt(sigma) / mime
         tt = np.zeros((Nstep,), dtype=np.float64)
         uf = np.zeros((Nstep, Nz, Ny, Nx, 6), dtype=np.float64)
-        um = np.zeros((Nstep, Nz, Ny, Nx, 2, 11), dtype=np.float64)
+        um = np.zeros((Nstep, Nz, Ny, Nx, Ns, 11), dtype=np.float64)
 
         # read
         for i in range(Nstep):
@@ -135,14 +136,15 @@ class Run(analysis.Run):
         Wf = 0.5 * np.sum(uf**2, axis=(1, 2, 3, 4))
         We = np.sum(um[..., 0, 4] * cc - um[..., 0, 0] * cc**2, axis=(1, 2, 3))
         Wi = np.sum(um[..., 1, 4] * cc - um[..., 1, 0] * cc**2, axis=(1, 2, 3))
-        Wtot = Wf[0] + We[0] + Wi[0]
+        Wr = np.sum(um[..., 2, 4] * cc - um[..., 2, 0] * cc**2, axis=(1, 2, 3))
+        Wtot = Wf[0] + We[0] + Wi[0] + Wr[0]
 
         fig, axs = plt.subplots(2, figsize=(8, 6), sharex=True)
         fig.subplots_adjust(
             top=0.95,
             bottom=0.15,
-            left=0.15,
-            right=0.80,
+            left=0.10,
+            right=0.75,
             hspace=0.10,
             wspace=0.10,
         )
@@ -150,13 +152,14 @@ class Run(analysis.Run):
         plt.sca(axs[0])
         plt.plot(tt, Wf / Wtot, label="field")
         plt.plot(tt, We / Wtot, label="electron")
-        plt.plot(tt, Wi / Wtot, label="ion")
+        plt.plot(tt, Wi / Wtot, label="incoming ion")
+        plt.plot(tt, Wr / Wtot, label="reflected ion")
         plt.ylabel("Energy")
         plt.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
         plt.grid()
 
         plt.sca(axs[1])
-        plt.plot(tt, 100 * ((Wf + We + Wi) / Wtot - 1), "k-")
+        plt.plot(tt, 100 * ((Wf + We + Wi + Wr) / Wtot - 1), "k-")
         plt.xlabel(r"$\Omega_{ci} t$")
         plt.ylabel("Energy Conservation Error [%]")
         plt.xlim(tt[0], tt[-1])
@@ -257,8 +260,14 @@ class Run(analysis.Run):
         up = self.read_particle_at(step)
         tp = self.get_particle_time_at(step) * wci
 
-        vx = up[1][:, 3] / vai
-        vy = up[1][:, 4] / vai
+        # calculate f(v)
+        vx = []
+        vy = []
+        for i in range(1, 3):
+            vx.append(up[i][:, 3] / vai)
+            vy.append(up[i][:, 4] / vai)
+        vx = np.concatenate(vx)
+        vy = np.concatenate(vy)
         hist2d = analysis.Histogram2D(vx, vy, (-2.0, +4.0, 151), (-3.0, +3.0, 151))
         X, Y, Z = hist2d.pcolormesh_args()
         vmax = 1.0e-2 if vmax is None else vmax

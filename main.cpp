@@ -1,7 +1,7 @@
 // -*- C++ -*-
 
-#include "expic3d.hpp"
 #include "diagnoser.hpp"
+#include "expic3d.hpp"
 
 constexpr int order = 1;
 
@@ -21,7 +21,7 @@ public:
 
     // check validity of assumptions
     {
-      constexpr int Ns_mustbe = 2;
+      constexpr int Ns_mustbe = 3;
 
       Ns = config["Ns"].get<int>();
 
@@ -121,11 +121,13 @@ public:
       }
 
       {
-        int   nz = dims[0] + 2 * Nb;
-        int   ny = dims[1] + 2 * Nb;
-        int   nx = dims[2] + 2 * Nb;
-        int   mp = nppc * dims[0] * dims[1] * dims[2];
-        int64 id = static_cast<int64>(mp) * static_cast<int64>(this->myid);
+        int   nz  = dims[0] + 2 * Nb;
+        int   ny  = dims[1] + 2 * Nb;
+        int   nx  = dims[2] + 2 * Nb;
+        int   mp  = nppc * dims[0] * dims[1] * dims[2];
+        int   mp1 = mp * (1 - alpha);
+        int   mp2 = mp - mp1;
+        int64 id  = static_cast<int64>(mp) * static_cast<int64>(this->myid);
 
         up.resize(Ns);
 
@@ -135,53 +137,61 @@ public:
         up[0]->q  = qele;
         up[0]->Np = mp;
 
-        // ion
-        up[1]     = std::make_shared<Particle>(2 * mp, nz * ny * nx);
+        // incoming ion
+        up[1]     = std::make_shared<Particle>(2 * mp1, nz * ny * nx);
         up[1]->m  = mion;
         up[1]->q  = qion;
-        up[1]->Np = mp;
+        up[1]->Np = mp1;
 
-        // position
-        for (int ip = 0; ip < mp; ip++) {
-          float64* ele = &up[0]->xu(ip, 0);
-          float64* ion = &up[1]->xu(ip, 0);
-          float64  x   = uniform(mtp) * xlim[2] + xlim[0];
-          float64  y   = uniform(mtp) * ylim[2] + ylim[0];
-          float64  z   = uniform(mtp) * zlim[2] + zlim[0];
+        // reflected ion
+        up[2]     = std::make_shared<Particle>(2 * mp2, nz * ny * nx);
+        up[2]->m  = mion;
+        up[2]->q  = qion;
+        up[2]->Np = mp2;
 
-          // this guarantees charge neutrality
-          ele[0] = x;
-          ele[1] = y;
-          ele[2] = z;
-          ion[0] = x;
-          ion[1] = y;
-          ion[2] = z;
+        // initialize particle distribution
+        std::vector<int>     mp_ele{0, mp1};
+        std::vector<int>     mp_ion{mp1, mp2};
+        std::vector<float64> vt_ion{vti, vtr};
+        std::vector<float64> vd_ion{vdi, vdr};
 
-          // ID
-          int64* ele_id64 = reinterpret_cast<int64*>(ele);
-          int64* ion_id64 = reinterpret_cast<int64*>(ion);
-          ele_id64[6]     = id + ip;
-          ion_id64[6]     = id + ip;
-        }
+        for (int is = 0; is < 2; is++) {
+          const int is_ele      = 0;
+          const int is_ion      = is + 1;
+          const int ip_ele_zero = mp_ele[is];
+          const int ip_ion_zero = 0;
 
-        // velocity
-        for (int ip = 0; ip < mp; ip++) {
-          float64* ele = &up[0]->xu(ip, 0);
-          float64* ion = &up[1]->xu(ip, 0);
+          for (int ip = 0; ip < mp_ion[is]; ip++) {
+            const int ip_ele = ip + ip_ele_zero;
+            const int ip_ion = ip + ip_ion_zero;
 
-          // electrons
-          ele[3] = normal(mtv) * vte;
-          ele[4] = normal(mtv) * vte;
-          ele[5] = normal(mtv) * vte;
+            // position: using these guarantees charge neutrality
+            float64 x = uniform(mtp) * xlim[2] + xlim[0];
+            float64 y = uniform(mtp) * ylim[2] + ylim[0];
+            float64 z = uniform(mtp) * zlim[2] + zlim[0];
 
-          // incoming or reflected ions
-          float64 r  = uniform(mtv);
-          float64 vt = r > alpha ? vti : vtr;
-          float64 vd = r > alpha ? vdi : vdr;
+            // electrons
+            up[is_ele]->xu(ip_ele, 0) = x;
+            up[is_ele]->xu(ip_ele, 1) = y;
+            up[is_ele]->xu(ip_ele, 2) = z;
+            up[is_ele]->xu(ip_ele, 3) = normal(mtv) * vte;
+            up[is_ele]->xu(ip_ele, 4) = normal(mtv) * vte;
+            up[is_ele]->xu(ip_ele, 5) = normal(mtv) * vte;
 
-          ion[3] = normal(mtv) * vt + vd;
-          ion[4] = normal(mtv) * vt;
-          ion[5] = normal(mtv) * vt;
+            // ions
+            up[is_ion]->xu(ip_ion, 0) = x;
+            up[is_ion]->xu(ip_ion, 1) = y;
+            up[is_ion]->xu(ip_ion, 2) = z;
+            up[is_ion]->xu(ip_ion, 3) = normal(mtv) * vt_ion[is] + vd_ion[is];
+            up[is_ion]->xu(ip_ion, 4) = normal(mtv) * vt_ion[is];
+            up[is_ion]->xu(ip_ion, 5) = normal(mtv) * vt_ion[is];
+
+            // ID
+            int64* ele_id64 = reinterpret_cast<int64*>(&up[is_ele]->xu(ip_ele, 0));
+            int64* ion_id64 = reinterpret_cast<int64*>(&up[is_ion]->xu(ip_ion, 0));
+            ele_id64[6]     = id + ip_ele;
+            ion_id64[6]     = id + ip_ele;
+          }
         }
       }
 

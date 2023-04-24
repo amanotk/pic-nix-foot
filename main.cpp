@@ -201,7 +201,7 @@ public:
       // allocate MPI buffer for particle
       int npmax = static_cast<int>(nppc * cc * delt / delh);
       this->set_mpi_buffer(mpibufvec[BoundaryParticle], 0, sizeof(int) * Ns,
-                           Ns * npmax * sizeof(float64) * Particle::Nc);
+                           Ns * npmax * Particle::get_particle_size());
     }
   }
 };

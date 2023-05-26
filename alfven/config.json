@@ -58,6 +58,7 @@
 		"betai": 0.03125,
 		"betar": 0.03125,
 		"seed_type": "random",
-		"field_load": 1.0
+		"field_load": 1.0,
+		"mpi_buffer_fraction": 2.0
 	}
 }

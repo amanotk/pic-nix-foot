@@ -198,10 +198,9 @@ public:
       // initial sort
       this->sort_particle(up);
 
-      // allocate MPI buffer for particle
-      int npmax = static_cast<int>(nppc * cc * delt / delh);
-      this->set_mpi_buffer(mpibufvec[BoundaryParticle], 0, sizeof(int) * Ns,
-                           Ns * npmax * Particle::get_particle_size());
+      // use default MPI buffer allocator for particle
+      float64 fraction = config.value("mpi_buffer_fraction", cc * delt / delh);
+      setup_particle_mpi_buffer(fraction);
     }
   }
 };

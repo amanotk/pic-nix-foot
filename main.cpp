@@ -3,7 +3,11 @@
 #include "diagnoser.hpp"
 #include "expic3d.hpp"
 
-constexpr int order = 1;
+#if defined(SHAPE_ORDER) && 1 <= SHAPE_ORDER && SHAPE_ORDER <= 2
+constexpr int order = SHAPE_ORDER;
+#else
+#error "Condition 1 <= SHAPE_ORDER <= 2 must be satisfied"
+#endif
 
 class MainChunk;
 class MainApplication;
@@ -132,19 +136,19 @@ public:
         up.resize(Ns);
 
         // electron
-        up[0]     = std::make_shared<Particle>(2 * mp, nz * ny * nx);
+        up[0]     = std::make_shared<ParticleType>(2 * mp, nz * ny * nx);
         up[0]->m  = mele;
         up[0]->q  = qele;
         up[0]->Np = mp;
 
         // incoming ion
-        up[1]     = std::make_shared<Particle>(2 * mp1, nz * ny * nx);
+        up[1]     = std::make_shared<ParticleType>(2 * mp1, nz * ny * nx);
         up[1]->m  = mion;
         up[1]->q  = qion;
         up[1]->Np = mp1;
 
         // reflected ion
-        up[2]     = std::make_shared<Particle>(2 * mp2, nz * ny * nx);
+        up[2]     = std::make_shared<ParticleType>(2 * mp2, nz * ny * nx);
         up[2]->m  = mion;
         up[2]->q  = qion;
         up[2]->Np = mp2;
@@ -205,12 +209,12 @@ public:
   }
 };
 
-class MainApplication : public ExPIC3D<order, MainDiagnoser>
+class MainApplication : public ExPIC3D<MainChunk, MainDiagnoser>
 {
 public:
-  using ExPIC3D<order, MainDiagnoser>::ExPIC3D; // inherit constructors
+  using ExPIC3D<MainChunk, MainDiagnoser>::ExPIC3D; // inherit constructors
 
-  std::unique_ptr<ExChunk3D<order>> create_chunk(const int dims[], int id) override
+  std::unique_ptr<MainChunk> create_chunk(const int dims[], int id) override
   {
     return std::make_unique<MainChunk>(dims, id);
   }
@@ -222,7 +226,7 @@ public:
 int main(int argc, char** argv)
 {
   MainApplication app(argc, argv);
-  return app.main(std::cout);
+  return app.main();
 }
 
 // Local Variables:

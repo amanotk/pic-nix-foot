@@ -14,6 +14,10 @@ set(PROJECT_NAME "foot")
 # project
 project(${PROJECT_NAME} CXX)
 
+# order of shape function
+option(SHAPE_ORDER "Set SHAPE_ORDER to specify order of shape function" 1)
+add_compile_definitions(SHAPE_ORDER=${SHAPE_ORDER})
+
 # source directory
 add_subdirectory(${PICNIX_DIR}/nix ${CMAKE_BINARY_DIR}/nix)
 add_subdirectory(${PICNIX_DIR}/expic ${CMAKE_BINARY_DIR}/expic)

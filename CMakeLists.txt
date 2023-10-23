@@ -14,6 +14,10 @@ set(PROJECT_NAME "foot")
 # project
 project(${PROJECT_NAME} CXX)
 
+# package
+set(CMAKE_MODULE_PATH "${PICNIX_DIR}/nix")
+find_package(Filesystem REQUIRED)
+
 # order of shape function
 set(SHAPE_ORDER 2 CACHE STRING "Order of shape function")
 add_compile_definitions(SHAPE_ORDER=${SHAPE_ORDER})
@@ -30,7 +34,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME main.out)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PICNIX_DIR})
 
 # link library
-target_link_libraries(${PROJECT_NAME} nix expic)
+target_link_libraries(${PROJECT_NAME} nix)
+target_link_libraries(${PROJECT_NAME} expic)
+target_link_libraries(${PROJECT_NAME} std::filesystem)
 
 # copy
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alfven DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

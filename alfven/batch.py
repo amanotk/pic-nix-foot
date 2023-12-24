@@ -113,7 +113,11 @@ class Run(analysis.Run):
             bzero = np.abs(bk[izero, +mode])
             plt.plot(tt, bzero * np.exp(gm * (tt - tzero)), "r--", label="theory")
             # appearance
-            plt.title(r"mode = {:d} $(k v_{{A}}/\Omega_{{ci}}$ = {:5.2f})".format(mode, kk[mode]))
+            plt.title(
+                r"mode = {:d} $(k v_{{A}}/\Omega_{{ci}}$ = {:5.2f})".format(
+                    mode, kk[mode]
+                )
+            )
             plt.semilogy()
             plt.legend(loc="lower right")
             plt.ylabel(r"$|B_y - i B_z|/B_0$".format(mode))
@@ -143,7 +147,7 @@ class Run(analysis.Run):
         fig.subplots_adjust(
             top=0.95,
             bottom=0.15,
-            left=0.10,
+            left=0.15,
             right=0.75,
             hspace=0.10,
             wspace=0.10,
@@ -159,14 +163,24 @@ class Run(analysis.Run):
         plt.grid()
 
         plt.sca(axs[1])
-        plt.plot(tt, 100 * ((Wf + We + Wi + Wr) / Wtot - 1), "k-")
+        err = 100 * ((Wf + We + Wi + Wr) / Wtot - 1)
+        mag = int(np.log10(np.abs(err).max())) - 1
+        fmt = "10^{" + "{:+d}".format(mag) + "}"
+        err /= 10**mag
+        plt.plot(tt, err, "k-")
         plt.xlabel(r"$\Omega_{ci} t$")
         plt.ylabel("Energy Conservation Error [%]")
         plt.xlim(tt[0], tt[-1])
         plt.grid()
+        # format y axis
+        formatter = mpl.ticker.FuncFormatter(
+            lambda x, pos: r"{:+2.0f} $\times {:s}$".format(x, fmt)
+        )
+        axs[1].yaxis.set_major_formatter(formatter)
 
         for ax in axs:
             ax.set_axisbelow(True)
+        fig.align_ylabels(axs)
 
         return fig
 
@@ -215,7 +229,12 @@ class Run(analysis.Run):
             wspace=0.20,
         )
         gridspec = fig.add_gridspec(
-            2, 3, height_ratios=[2, 50], width_ratios=[1, 1, 1], hspace=0.05, wspace=0.25
+            2,
+            3,
+            height_ratios=[2, 50],
+            width_ratios=[1, 1, 1],
+            hspace=0.05,
+            wspace=0.25,
         )
 
         axs = [0] * 3

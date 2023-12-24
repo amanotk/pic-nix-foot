@@ -1,15 +1,14 @@
 {
 	"application": {
+		"basedir" : "data",
 		"log": {
 			"path": ".",
 			"prefix": "log",
-			"interval": 2000,
-			"options": null
+			"interval": 2000
 		},
 		"rebalance": {
 			"interval": 10,
-			"loglevel": 1,
-			"options": null
+			"loglevel": 1
 		}
 	},
 	"diagnostic": [
@@ -17,22 +16,19 @@
 			"name": "history",
 			"path": ".",
 			"prefix": "history",
-			"interval": 200,
-			"options": null
+			"interval": 200
 		},
 		{
 			"name": "field",
 			"path": ".",
 			"prefix": "field",
-			"interval": 10,
-			"options": null
+			"interval": 10
 		},
 		{
 			"name": "particle",
 			"path": ".",
 			"prefix": "particle",
-			"interval": 200,
-			"options": null
+			"interval": 200
 		}
 	],
 	"parameter": {
@@ -49,7 +45,7 @@
 		"delh": 1.0e-1,
 		"nppc": 64,
 		"mime": 400,
-		"mach": 8.0e+1,
+		"mach": 4.0e+1,
 		"theta": 0.0,
 		"phi": 0.0,
 		"sigma": 1.0e-2,

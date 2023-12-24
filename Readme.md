@@ -27,8 +27,8 @@ B_{0,z} &= B_0 \sin \theta \sin \phi
 With these parameters, the core and reflected ion drift velocities are given by
 ```math
 \begin{aligned}
-	V_{d,i}/V_{A,i} &= - M_A \alpha, \\
-	V_{d,r}/V_{A,i} &= + M_A (1 - \alpha).
+	V_{d,i}/V_{A,i} &= - 2 M_A \alpha, \\
+	V_{d,r}/V_{A,i} &= + 2 M_A (1 - \alpha).
 \end{aligned}
 ```
 These drift velocities are always parallel to the x axis.  

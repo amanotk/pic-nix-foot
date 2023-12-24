@@ -61,8 +61,8 @@ public:
     float64 vte   = vae * sqrt(0.5 * betae);
     float64 vti   = vai * sqrt(0.5 * betai);
     float64 vtr   = vai * sqrt(0.5 * betar);
-    float64 vdi   = -vai * mach * alpha;
-    float64 vdr   = +vai * mach * (1 - alpha);
+    float64 vdi   = -2 * vai * mach * alpha;
+    float64 vdr   = +2 * vai * mach * (1 - alpha);
 
     // set grid size and coordinate
     set_coordinate(delh, delh, delh);

@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 if(NOT DEFINED PICNIX_DIR)
   message(FATAL_ERROR "Please define PICNIX_DIR")
 endif()
+
 get_filename_component(PICNIX_DIR ${PICNIX_DIR} ABSOLUTE)
 
 # common configuration
@@ -40,3 +41,4 @@ target_link_libraries(${PROJECT_NAME} std::filesystem)
 
 # copy
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alfven DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/buneman DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

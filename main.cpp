@@ -2,6 +2,7 @@
 
 #include "diagnoser.hpp"
 #include "expic3d.hpp"
+#include "random.hpp"
 
 #if defined(SHAPE_ORDER) && 1 <= SHAPE_ORDER && SHAPE_ORDER <= 2
 constexpr int order = SHAPE_ORDER;
@@ -61,8 +62,15 @@ public:
     float64 vte   = vae * sqrt(0.5 * betae);
     float64 vti   = vai * sqrt(0.5 * betai);
     float64 vtr   = vai * sqrt(0.5 * betar);
-    float64 vdi   = -2 * vai * mach * alpha;
-    float64 vdr   = +2 * vai * mach * (1 - alpha);
+
+    // quantities in the simulation frame
+    float64 vsh  = vai * mach;
+    float64 vdi  = -2 * alpha * vsh / (1 - (1 - 2 * alpha) * vsh * vsh);
+    float64 vdr  = +2 * (1 - alpha) * vsh / (1 + (1 - 2 * alpha) * vsh * vsh);
+    float64 udi  = vdi / sqrt(1 - vdi * vdi / (cc * cc));
+    float64 udr  = vdr / sqrt(1 - vdr * vdr / (cc * cc));
+    float64 nref = alpha * (1 + (1 - 2 * alpha) * vsh * vsh) /
+                   (1 - (1 - 2 * alpha) * (1 - 2 * alpha) * vsh * vsh);
 
     // set grid size and coordinate
     set_coordinate(delh, delh, delh);
@@ -102,11 +110,14 @@ public:
     //
     {
       // random number generators
-      int                                     random_seed = 0;
-      std::mt19937                            mtp(0);
-      std::mt19937                            mtv(0);
-      std::uniform_real_distribution<float64> uniform(0.0, 1.0);
-      std::normal_distribution<float64>       normal(0.0, 1.0);
+      int                              random_seed = 0;
+      std::mt19937_64                  mtp(0);
+      std::mt19937_64                  mtv(0);
+      nix::rand_uniform                uniform(0.0, 1.0);
+      nix::MaxwellJuttner              mj_ele(vte * vte, 0.0);
+      std::vector<nix::MaxwellJuttner> mj_ion;
+      mj_ion.push_back(nix::MaxwellJuttner(vti * vti, udi));
+      mj_ion.push_back(nix::MaxwellJuttner(vtr * vtr, udr));
 
       // random seed
       {
@@ -129,7 +140,7 @@ public:
         int   ny  = dims[1] + 2 * Nb;
         int   nx  = dims[2] + 2 * Nb;
         int   mp  = nppc * dims[0] * dims[1] * dims[2];
-        int   mp1 = mp * (1 - alpha);
+        int   mp1 = mp * (1 - nref);
         int   mp2 = mp - mp1;
         int64 id  = static_cast<int64>(mp) * static_cast<int64>(this->myid);
 
@@ -154,10 +165,8 @@ public:
         up[2]->Np = mp2;
 
         // initialize particle distribution
-        std::vector<int>     mp_ele{0, mp1};
-        std::vector<int>     mp_ion{mp1, mp2};
-        std::vector<float64> vt_ion{vti, vtr};
-        std::vector<float64> vd_ion{vdi, vdr};
+        std::vector<int> mp_ele{0, mp1};
+        std::vector<int> mp_ion{mp1, mp2};
 
         for (int is = 0; is < 2; is++) {
           const int is_ele      = 0;
@@ -175,20 +184,28 @@ public:
             float64 z = uniform(mtp) * zlim[2] + zlim[0];
 
             // electrons
-            up[is_ele]->xu(ip_ele, 0) = x;
-            up[is_ele]->xu(ip_ele, 1) = y;
-            up[is_ele]->xu(ip_ele, 2) = z;
-            up[is_ele]->xu(ip_ele, 3) = normal(mtv) * vte;
-            up[is_ele]->xu(ip_ele, 4) = normal(mtv) * vte;
-            up[is_ele]->xu(ip_ele, 5) = normal(mtv) * vte;
+            {
+              auto [ux, uy, uz] = mj_ele(mtv);
+
+              up[is_ele]->xu(ip_ele, 0) = x;
+              up[is_ele]->xu(ip_ele, 1) = y;
+              up[is_ele]->xu(ip_ele, 2) = z;
+              up[is_ele]->xu(ip_ele, 3) = ux;
+              up[is_ele]->xu(ip_ele, 4) = uy;
+              up[is_ele]->xu(ip_ele, 5) = uz;
+            }
 
             // ions
-            up[is_ion]->xu(ip_ion, 0) = x;
-            up[is_ion]->xu(ip_ion, 1) = y;
-            up[is_ion]->xu(ip_ion, 2) = z;
-            up[is_ion]->xu(ip_ion, 3) = normal(mtv) * vt_ion[is] + vd_ion[is];
-            up[is_ion]->xu(ip_ion, 4) = normal(mtv) * vt_ion[is];
-            up[is_ion]->xu(ip_ion, 5) = normal(mtv) * vt_ion[is];
+            {
+              auto [ux, uy, uz] = mj_ion[is](mtv);
+
+              up[is_ion]->xu(ip_ion, 0) = x;
+              up[is_ion]->xu(ip_ion, 1) = y;
+              up[is_ion]->xu(ip_ion, 2) = z;
+              up[is_ion]->xu(ip_ion, 3) = ux;
+              up[is_ion]->xu(ip_ion, 4) = uy;
+              up[is_ion]->xu(ip_ion, 5) = uz;
+            }
 
             // ID
             int64* ele_id64 = reinterpret_cast<int64*>(&up[is_ele]->xu(ip_ele, 0));

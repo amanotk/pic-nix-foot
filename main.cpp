@@ -64,7 +64,8 @@ public:
     float64 vtr   = vai * sqrt(0.5 * betar);
 
     // quantities in the simulation frame
-    float64 vsh  = vai * mach;
+    float64 ush  = vai * mach;
+    float64 vsh  = ush / sqrt(1 + ush * ush / (cc * cc));
     float64 vdi  = -2 * alpha * vsh / (1 - (1 - 2 * alpha) * vsh * vsh);
     float64 vdr  = +2 * (1 - alpha) * vsh / (1 + (1 - 2 * alpha) * vsh * vsh);
     float64 udi  = vdi / sqrt(1 - vdi * vdi / (cc * cc));

@@ -25,7 +25,7 @@ B_{0,z} &= B_0 \sin \theta \sin \phi
 \end{aligned}
 ```
 
-Note that the electron velocity in the shock rest frame is written as $V_e = -(1 - 2\alpha) V_s$ where $V_s = M_A V_{A,i}$ is the three shock speed.
+Note that the electron velocity in the shock rest frame is written as $V_e = -(1 - 2\alpha) V_s$ where $V_s$ is the three shock speed calculated from the four shock speed $U_s = M_A V_{A,i}$.
 The density ratio $\alpha$ is defined in the shock rest frame, which we need to convert to the simulation frame to yield
 ```math
 \alpha' = \alpha \frac{1 + (1 - 2\alpha) V_s^2}{1 - (1 - 2\alpha)^2 V_s^2}

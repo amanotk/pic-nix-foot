@@ -24,14 +24,21 @@ B_{0,y} &= B_0 \sin \theta \cos \phi \\
 B_{0,z} &= B_0 \sin \theta \sin \phi
 \end{aligned}
 ```
-With these parameters, the core and reflected ion drift velocities are given by
+
+Note that the electron velocity in the shock rest frame is written as $V_e = -(1 - 2\alpha) V_s$ where $V_s = M_A V_{A,i}$ is the three shock speed.
+The density ratio $\alpha$ is defined in the shock rest frame, which we need to convert to the simulation frame to yield
+```math
+\alpha' = \alpha \frac{1 + (1 - 2\alpha) V_s^2}{1 - (1 - 2\alpha)^2 V_s^2}
+```
+Similarly, the core and reflected ion drift velocities are given by
 ```math
 \begin{aligned}
-	V_{d,i}/V_{A,i} &= - 2 M_A \alpha, \\
-	V_{d,r}/V_{A,i} &= + 2 M_A (1 - \alpha).
+  V_i' = \frac{-2 \alpha V_s}{1 - (1 - 2\alpha) V_s^2}\\
+  V_r' = \frac{+2 (1-\alpha) V_s}{1 + (1 - 2\alpha) V_s^2}
 \end{aligned}
 ```
-These drift velocities are always parallel to the x axis.  
+These drift velocities are always parallel to the x axis.
+It is easy to check that the above quantities satisfy the charge and current neutrality conditions.  
 Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sqrt{n_0 m_e}$ and $V_{A,i} = B_0 / \sqrt{n_0 m_i}$, respectively.
 
 
@@ -52,7 +59,7 @@ $ git clone git@github.com:amanotk/pic-nix-foot.git
 ## Compile
 Compile the code to obtain an executable `main.out` in the working directory as follows:
 ```
-$ export PICNIX_DIR=${PWD}/pic-nix
+$ export PICNIX_DIR=/some/where/pic-nix
 $ cd pic-nix-foot
 $ mkdir build
 $ cd build
@@ -65,24 +72,36 @@ $ make
 The environment variable `PICNIX_DIR` should be set to the path to [pic-nix](https://github.com/amanotk/pic-nix) directory.
 
 ## Run
-### Example: `aflven`
-An ion beam propagating parallel to the ambient magnetic field can generate an Alfven wave via the cyclotron resonance.  
-The directory `alfven` provides an example setup for this problem in 1D.  
 
-Go to `alfven` directory:
+### Example 1: `buneman`
+This example provides a setup for the Buneman instability, an electrostatic ion-electron beam instability.  
+
+Go to `buneman` directory:
 ```
-$ cd alfven
+$ cd buneman
 ```
-and run the coe, for instance, via:
+and run the code, for instance, via:
 ```
 $ export OMP_NUM_THREADS=2
+$ mpiexec -n 8 ../main.out -e 86400 -t 200 -c config.json
+```
+The data files are written to `data` directory by default.  
+To examine the simulation results, run the following command:
+```
+$ python batch.py data/profile.msgpack
+```
+You will find image files generated in the same directory.
+
+
+### Example 2: `aflven`
+This example provides a setup for an instability where an ion beam propagating parallel to the ambient magnetic field generates Alfven waves via the cyclotron resonance.  
+
+Run with the same procedure with `buneman`, but this time with the following command to run up to $\omega_{pe} t = 5000$
+```
 $ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.json
 ```
-Then, run the following command on the same directory to generate plots to examine the simulation results:
-```
-$ python batch.py profile.msgpack
-```
-For details of the problem, see, Hoshino & Terasawa (1985).
+The rest is the same as `buneman`.
+For details of the problem, see Hoshino & Terasawa (1985).
 
 
 # References

@@ -43,33 +43,26 @@ Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sq
 
 
 # Compiling and Executing the Code
-The procedure is very similar to the description available [here](https://github.com/amanotk/pic-nix).
+The procedure is very similar to the description available [here](https://github.com/amanotk/pic-nix).  
+Note that the [pic-nix](https://github.com/amanotk/pic-nix) repository will automatically be cloned in the build directory with the following procedure.
 
 ## Clone
-Not only this repository, you also need to clone [pic-nix](https://github.com/amanotk/pic-nix).
-For instance, clone the two repositories on the same directory as follows:
+Clone the repository via:
 ```
-$ git clone git@github.com:amanotk/pic-nix.git
-$ cd pic-nix
-$ git submodule update --init
-$ cd ..
 $ git clone git@github.com:amanotk/pic-nix-foot.git
 ```
 
 ## Compile
-Compile the code to obtain an executable `main.out` in the working directory as follows:
+Compile the code to obtain an executable `main.out` as follows:
 ```
-$ export PICNIX_DIR=/some/where/pic-nix
 $ cd pic-nix-foot
-$ mkdir build
-$ cd build
-$ cmake .. \
-	-DPICNIX_DIR=${PICNIX_DIR} \
+$ cmake -S . -B build \
 	-DCMAKE_CXX_COMPILER=mpicxx \
 	-DCMAKE_CXX_FLAGS="-O3 -fopenmp"
-$ make
+$ cmake --build build
 ```
-The environment variable `PICNIX_DIR` should be set to the path to [pic-nix](https://github.com/amanotk/pic-nix) directory.
+The executable file will be found in the `build` directory.
+
 
 ## Run
 
@@ -86,7 +79,9 @@ $ export OMP_NUM_THREADS=2
 $ mpiexec -n 8 ../main.out -e 86400 -t 200 -c config.json
 ```
 The data files are written to `data` directory by default.  
-To examine the simulation results, run the following command:
+
+Set the environment variable `PICNIX_DIR` to the path to the [pic-nix](https://github.com/amanotk/pic-nix) directory.
+Then, run the following command to examine the simulation results:
 ```
 $ python batch.py data/profile.msgpack
 ```

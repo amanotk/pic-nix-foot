@@ -8,24 +8,37 @@ project(pic-nix-foot CXX)
 # pic-nix as an external project
 include(FetchContent)
 
-set(PICNIX_DIR ${CMAKE_CURRENT_BINARY_DIR}/pic-nix)
-FetchContent_Declare(
-  pic-nix
-  GIT_REPOSITORY https://github.com/amanotk/pic-nix.git
-  GIT_TAG main
-  SOURCE_DIR ${PICNIX_DIR}
-  BINARY_DIR ${PICNIX_DIR}-build
-)
-set(BUILD_EXAMPLE OFF) # disable building example
-FetchContent_MakeAvailable(pic-nix)
+set(PICNIX_BUILD_EXAMPLE OFF) # disable building example
+
+if(DEFINED PICNIX_DIR AND EXISTS ${PICNIX_DIR})
+  # use existing pic-nix directory
+  get_filename_component(PICNIX_DIR "${PICNIX_DIR}" ABSOLUTE)
+  message(STATUS "Using existing pic-nix directory : ${PICNIX_DIR}")
+  add_subdirectory(${PICNIX_DIR} ${CMAKE_BINARY_DIR}/pic-nix)
+else()
+  #  download pic-nix from github
+  set(PICNIX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pic-nix)
+  FetchContent_Declare(
+    pic-nix
+    GIT_REPOSITORY https://github.com/amanotk/pic-nix.git
+    GIT_TAG main
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pic-nix
+    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pic-nix
+  )
+  FetchContent_MakeAvailable(pic-nix)
+endif()
 
 # Filesystem package
-set(CMAKE_MODULE_PATH ${pic-nix_SOURCE_DIR}/nix)
+set(CMAKE_MODULE_PATH ${PICNIX_DIR}/nix)
 find_package(Filesystem REQUIRED)
 
-# order of shape function
-set(SHAPE_ORDER 2 CACHE STRING "Order of shape function")
-add_compile_definitions(SHAPE_ORDER=${SHAPE_ORDER})
+# order of particle shape function
+set(PICNIX_SHAPE_ORDER 2 CACHE STRING "Order of particle shape function")
+add_compile_definitions(PICNIX_SHAPE_ORDER=${PICNIX_SHAPE_ORDER})
+
+if(NOT(PICNIX_SHAPE_ORDER GREATER_EQUAL 1 AND PICNIX_SHAPE_ORDER LESS_EQUAL 4))
+  message(FATAL_ERROR "PICNIX_SHAPE_ORDER must be between 1 and 4.")
+endif()
 
 # executable
 add_executable(${PROJECT_NAME} main.cpp)

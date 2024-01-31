@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # project
-project(pic-nix-foot CXX)
+set(PROJECT_NAME "foot")
+project(${PROJECT_NAME} CXX)
 
 # pic-nix as an external project
 include(FetchContent)
@@ -32,6 +32,9 @@ endif()
 set(CMAKE_MODULE_PATH ${PICNIX_DIR}/nix)
 find_package(Filesystem REQUIRED)
 
+# xsimd for xtensor
+add_compile_definitions(XTENSOR_USE_XSIMD)
+
 # order of particle shape function
 set(PICNIX_SHAPE_ORDER 2 CACHE STRING "Order of particle shape function")
 add_compile_definitions(PICNIX_SHAPE_ORDER=${PICNIX_SHAPE_ORDER})
@@ -48,9 +51,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME main.out)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PICNIX_DIR})
 
 # link library
-target_link_libraries(${PROJECT_NAME} nix)
-target_link_libraries(${PROJECT_NAME} expic)
 target_link_libraries(${PROJECT_NAME} std::filesystem)
+target_link_libraries(${PROJECT_NAME} nix expic)
 
 # copy
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alfven DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

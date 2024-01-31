@@ -2,7 +2,7 @@
 
 #include "diagnoser.hpp"
 #include "expic3d.hpp"
-#include "random.hpp"
+#include "nix/random.hpp"
 
 constexpr int order = PICNIX_SHAPE_ORDER;
 
@@ -17,8 +17,7 @@ public:
 
   virtual void setup(json& config) override
   {
-    // parameter for load balancing
-    field_load = config.value("field_load", 1.0);
+    ExChunk3D<order>::setup(config);
 
     // check validity of assumptions
     {
@@ -27,7 +26,7 @@ public:
       Ns = config["Ns"].get<int>();
 
       if (Ns != Ns_mustbe) {
-        ERROR << "Assumption of Ns = 2 is violated";
+        ERROR << "Assumption of Ns = 3 is violated";
         exit(-1);
       }
     }
@@ -106,31 +105,14 @@ public:
     // initialize particles
     //
     {
-      // random number generators
-      int                              random_seed = 0;
-      std::mt19937_64                  mtp(0);
-      std::mt19937_64                  mtv(0);
+      int                              random_seed = option["random_seed"].get<int>();
+      std::mt19937_64                  mtp(random_seed);
+      std::mt19937_64                  mtv(random_seed);
       nix::rand_uniform                uniform(0.0, 1.0);
       nix::MaxwellJuttner              mj_ele(vte * vte, 0.0);
       std::vector<nix::MaxwellJuttner> mj_ion;
       mj_ion.push_back(nix::MaxwellJuttner(vti * vti, udi));
       mj_ion.push_back(nix::MaxwellJuttner(vtr * vtr, udr));
-
-      // random seed
-      {
-        std::string seed_type = config.value("seed_type", "random"); // random by default
-
-        if (seed_type == "random") {
-          random_seed = std::random_device()();
-        } else if (seed_type == "chunkid") {
-          random_seed = this->myid; // chunk ID
-        } else {
-          ERROR << tfm::format("Ignoring invalid seed_type: %s", seed_type);
-        }
-
-        mtp.seed(random_seed);
-        mtv.seed(random_seed);
-      }
 
       {
         int   nz  = dims[0] + 2 * Nb;
@@ -216,9 +198,8 @@ public:
       // initial sort
       this->sort_particle(up);
 
-      // use default MPI buffer allocator for particle
-      float64 fraction = config.value("mpi_buffer_fraction", cc * delt / delh);
-      setup_particle_mpi_buffer(fraction);
+      // allocate MPI buffer for particle
+      setup_particle_mpi_buffer(option["mpi_buffer_fraction"].get<float64>());
     }
   }
 };

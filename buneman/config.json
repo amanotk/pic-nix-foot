@@ -48,7 +48,7 @@
 		"delh": 1.0e-1,
 		"nppc": 64,
 		"mime": 400,
-		"mach": 4.0e+1,
+		"ush": 2.0e-1,
 		"theta": 0.0,
 		"phi": 0.0,
 		"sigma": 1.0e-2,

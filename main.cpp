@@ -39,7 +39,7 @@ public:
     float64 delt  = config["delt"].get<float64>();
     float64 delh  = config["delh"].get<float64>();
     float64 mime  = config["mime"].get<float64>();
-    float64 mach  = config["mach"].get<float64>();
+    float64 ush   = config["ush"].get<float64>();
     float64 theta = config["theta"].get<float64>();
     float64 phi   = config["phi"].get<float64>();
     float64 sigma = config["sigma"].get<float64>();
@@ -47,11 +47,12 @@ public:
     float64 betae = config["betae"].get<float64>();
     float64 betai = config["betai"].get<float64>();
     float64 betar = config["betar"].get<float64>();
-    float64 mele  = 1.0 / (sigma * nppc);
-    float64 qele  = -wp * sqrt(sigma) * mele;
-    float64 mion  = mele * mime;
-    float64 qion  = -qele;
-    float64 b0    = cc * sqrt(sigma) / std::abs(qele / mele);
+    float64 gamsh = sqrt(1.0 + (ush * ush) / (cc * cc));
+    float64 me    = 1.0 / nppc;
+    float64 qe    = -wp / nppc;
+    float64 mi    = me * mime;
+    float64 qi    = -qe;
+    float64 b0    = cc * wp * sqrt(sigma) / std::abs(qe / me);
     float64 vae   = cc * sqrt(sigma);
     float64 vai   = cc * sqrt(sigma / mime);
     float64 vte   = vae * sqrt(0.5 * betae);
@@ -59,8 +60,7 @@ public:
     float64 vtr   = vai * sqrt(0.5 * betar);
 
     // quantities in the simulation frame
-    float64 ush  = vai * mach;
-    float64 vsh  = ush / sqrt(1 + ush * ush / (cc * cc));
+    float64 vsh  = ush / gamsh;
     float64 vdi  = -2 * alpha * vsh / (1 - (1 - 2 * alpha) * vsh * vsh);
     float64 vdr  = +2 * (1 - alpha) * vsh / (1 + (1 - 2 * alpha) * vsh * vsh);
     float64 udi  = vdi / sqrt(1 - vdi * vdi / (cc * cc));
@@ -130,20 +130,20 @@ public:
 
         // electron
         up[0]     = std::make_shared<ParticleType>(2 * mp, nz * ny * nx);
-        up[0]->m  = mele;
-        up[0]->q  = qele;
+        up[0]->m  = me;
+        up[0]->q  = qe;
         up[0]->Np = mp;
 
         // incoming ion
         up[1]     = std::make_shared<ParticleType>(2 * mp1, nz * ny * nx);
-        up[1]->m  = mion;
-        up[1]->q  = qion;
+        up[1]->m  = mi;
+        up[1]->q  = qi;
         up[1]->Np = mp1;
 
         // reflected ion
         up[2]     = std::make_shared<ParticleType>(2 * mp2, nz * ny * nx);
-        up[2]->m  = mion;
-        up[2]->q  = qion;
+        up[2]->m  = mi;
+        up[2]->q  = qi;
         up[2]->Np = mp2;
 
         // initialize particle distribution

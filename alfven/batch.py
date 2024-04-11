@@ -39,6 +39,7 @@ class Run(analysis.Run):
         wp = parameter["wp"]
         mime = parameter["mime"]
         sigma = parameter["sigma"]
+        b0 = cc * np.sqrt(sigma)
         vai = cc * np.sqrt(sigma / mime)
         wci = wp * np.sqrt(sigma) / mime
         tt = np.zeros((Nstep,), dtype=np.float64)
@@ -64,6 +65,7 @@ class Run(analysis.Run):
             wp=wp,
             mime=mime,
             sigma=sigma,
+            b0=b0,
             vai=vai,
             wci=wci,
             xc=self.xc,
@@ -75,13 +77,14 @@ class Run(analysis.Run):
     def linear_theory(self):
         Nx = self.data["Nx"]
         delh = self.data["delh"]
+        b0 = self.data["b0"]
         vai = self.data["vai"]
         wci = self.data["wci"]
         tt = self.data["tt"] * wci
         uf = self.data["uf"]
 
         # take Fourier transform for transverse B-field in complex representation
-        bt = (uf[..., 4] - 1j * uf[..., 5]).mean(axis=(1, 2))
+        bt = (uf[..., 4] - 1j * uf[..., 5]).mean(axis=(1, 2)) / b0
         kk = np.fft.fftfreq(Nx, delh / (vai / wci)) * 2 * np.pi
         bk = np.fft.fft(bt, axis=-1) / Nx
 
@@ -186,6 +189,7 @@ class Run(analysis.Run):
 
     def helicity_decomposition(self):
         Nx = self.data["Nx"]
+        b0 = self.data["b0"]
         vai = self.data["vai"]
         wci = self.data["wci"]
         xc = self.data["xc"] / (vai / wci)
@@ -193,8 +197,8 @@ class Run(analysis.Run):
         uf = self.data["uf"]
 
         # show time evolution with helicity decomposition
-        by = uf[..., 4].mean(axis=(1, 2))
-        bz = uf[..., 5].mean(axis=(1, 2))
+        by = uf[..., 4].mean(axis=(1, 2)) / b0
+        bz = uf[..., 5].mean(axis=(1, 2)) / b0
         bt = by - 1j * bz
         bk = np.fft.fft(bt, axis=-1)
         bp = np.zeros_like(bk)

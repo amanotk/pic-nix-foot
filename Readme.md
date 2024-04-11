@@ -7,7 +7,7 @@ The following parameters should be defined in the confirugation file:
 - `cc` : speed of light $c$
 - `wp` : electron plasma frequency $\omega_{pe}$
 - `mime` : ion-to-electron mass ratio $m_i/m_e$
-- `mach` : Alfven Mach number $M_A$
+- `ush` : Four shock speed in units of the speed of light $U_{sh}/c$
 - `theta` : polar angle of the ambient magnetic field with respect to the x axis $\theta$
 - `phi` : azimuthul angle of the ambient magnetic field with respect to the x axis $\phi$
 - `sigma` : electron cyclotron-to-plasma frequency squared $\sigma = \Omega_{ce}^2/\omega_{pe}^2$
@@ -25,16 +25,16 @@ B_{0,z} &= B_0 \sin \theta \sin \phi
 \end{aligned}
 ```
 
-Note that the electron velocity in the shock rest frame is written as $V_e = -(1 - 2\alpha) V_s$ where $V_s$ is the three shock speed calculated from the four shock speed $U_s = M_A V_{A,i}$.
+Note that the electron velocity in the shock rest frame is written as $V_e = -(1 - 2\alpha) V_{sh}$ where $V_{sh} = U_{sh} / (1 + U_{sh}^2/c^2)^{1/2}$ is the three shock speed calculated from the four shock speed.
 The density ratio $\alpha$ is defined in the shock rest frame, which we need to convert to the simulation frame to yield
 ```math
-\alpha' = \alpha \frac{1 + (1 - 2\alpha) V_s^2}{1 - (1 - 2\alpha)^2 V_s^2}
+\alpha' = \alpha \frac{1 + (1 - 2\alpha) V_{sh}^2}{1 - (1 - 2\alpha)^2 V_{sh}^2}
 ```
 Similarly, the core and reflected ion drift velocities are given by
 ```math
 \begin{aligned}
-  V_i' = \frac{-2 \alpha V_s}{1 - (1 - 2\alpha) V_s^2}\\
-  V_r' = \frac{+2 (1-\alpha) V_s}{1 + (1 - 2\alpha) V_s^2}
+  V_i' = \frac{-2 \alpha V_{sh}}{1 - (1 - 2\alpha) V_{sh}^2}\\
+  V_r' = \frac{+2 (1-\alpha) V_{sh}}{1 + (1 - 2\alpha) V_{sh}^2}
 \end{aligned}
 ```
 These drift velocities are always parallel to the x axis.

@@ -122,7 +122,7 @@ class Run(analysis.Run):
             plt.legend(loc="lower right")
             plt.ylabel(r"$|E_x|$".format(mode))
             plt.xlim(0, tt[-1])
-            plt.ylim(1e-3, 1e0)
+            plt.ylim(1e-4, 1e-1)
             plt.grid()
 
         plt.sca(axs[-1])

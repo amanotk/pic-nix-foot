@@ -5,6 +5,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(PROJECT_NAME "foot")
 project(${PROJECT_NAME} CXX)
 
+# xsimd for xtensor
+add_compile_definitions(XTENSOR_USE_XSIMD)
+
+# MPI_THREAD_MULTIPLE
+option(MPI_THREAD_MULTIPLE "Enable MPI_THREAD_MULTIPLE" ON)
+if(MPI_THREAD_MULTIPLE)
+    add_compile_definitions(HAS_MPI_THREAD_MULTIPLE)
+endif()
+
+# order of particle shape function
+set(PICNIX_SHAPE_ORDER 2 CACHE STRING "Order of particle shape function")
+add_compile_definitions(PICNIX_SHAPE_ORDER=${PICNIX_SHAPE_ORDER})
+
+if(NOT(PICNIX_SHAPE_ORDER GREATER_EQUAL 1 AND PICNIX_SHAPE_ORDER LESS_EQUAL 4))
+  message(FATAL_ERROR "PICNIX_SHAPE_ORDER must be between 1 and 4.")
+endif()
+
 # pic-nix as an external project
 include(FetchContent)
 
@@ -32,17 +49,6 @@ endif()
 # Filesystem package
 set(CMAKE_MODULE_PATH ${PICNIX_DIR}/nix)
 find_package(Filesystem REQUIRED)
-
-# xsimd for xtensor
-add_compile_definitions(XTENSOR_USE_XSIMD)
-
-# order of particle shape function
-set(PICNIX_SHAPE_ORDER 2 CACHE STRING "Order of particle shape function")
-add_compile_definitions(PICNIX_SHAPE_ORDER=${PICNIX_SHAPE_ORDER})
-
-if(NOT(PICNIX_SHAPE_ORDER GREATER_EQUAL 1 AND PICNIX_SHAPE_ORDER LESS_EQUAL 4))
-  message(FATAL_ERROR "PICNIX_SHAPE_ORDER must be between 1 and 4.")
-endif()
 
 # executable
 add_executable(${PROJECT_NAME} main.cpp)

@@ -1,22 +1,24 @@
 # About
-This setup models the dynamics of a collisionless shock transition layer with a three-component homogeneous plasma with the periodic boundary condition in all three directions. The system consists of the reflected ions, the incoming core (upstream) ions and the background electrons, all represented by isotropic Maxwellian distributions in the rest frame of each component. The simulation frame corresponds to the rest frame of electrons.
+This setup models the dynamics of a collisionless shock transition layer with a three-component homogeneous plasma with the periodic boundary condition in all three directions. The system consists of the reflected ions, the incoming core (upstream) ions, and the background electrons, all represented by isotropic Maxwellian distributions in the rest frame of each component. The simulation frame corresponds to the rest frame of electrons.
 
 
 # Physical Parameters
-The following parameters should be defined in the confirugation file:
+The following parameters should be defined in the configuration file:
 - `cc` : speed of light $c$
 - `wp` : electron plasma frequency $\omega_{pe}$
 - `mime` : ion-to-electron mass ratio $m_i/m_e$
-- `ush` : Four shock speed in units of the speed of light $U_{sh}/c$
-- `theta` : polar angle of the ambient magnetic field with respect to the x axis $\theta$
-- `phi` : azimuthul angle of the ambient magnetic field with respect to the x axis $\phi$
+- `ush` : Four-shock speed in units of the speed of light $U_{sh}/c$
+- `theta` : polar angle of the ambient magnetic field with respect to the x-axis $\theta$
+- `phi` : azimuthal angle of the ambient magnetic field with respect to the x-axis $\phi$
 - `sigma` : electron cyclotron-to-plasma frequency squared $\sigma = \Omega_{ce}^2/\omega_{pe}^2$
 - `alpha` : density of the reflected ion beam normalized to the total density $\alpha = n_r/n_0$
 - `betae` : electron plasma beta $\beta_e = 2 v_{th,e}^2/V_{A,e}^2$
 - `betai` : core ion plasma beta $\beta_i = 2 v_{th,i}^2/V_{A,i}^2$
 - `betar` : reflected ion plasma beta $\beta_r = 2 v_{th,r}^2/V_{A,i}^2$
 
-The ambient magnetic feld is normalized to unity $B_0 = 1$. The three components of the ambient magnetic field are given by
+The electron charge-to-mass ratio is assumed to be unity $|e|/m_e = 1$,
+which gives the ambient magnetic field $B_0 = c \omega_{pe} \sqrt{\sigma}$.  
+The three components of the ambient magnetic field are then given by
 ```math
 \begin{aligned}
 B_{0,x} &= B_0 \cos \theta \\
@@ -37,14 +39,15 @@ Similarly, the core and reflected ion drift velocities are given by
   V_r' = \frac{+2 (1-\alpha) V_{sh}}{1 + (1 - 2\alpha) V_{sh}^2}
 \end{aligned}
 ```
-These drift velocities are always parallel to the x axis.
+These drift velocities are always parallel to the x-axis.
 It is easy to check that the above quantities satisfy the charge and current neutrality conditions.  
 Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sqrt{n_0 m_e}$ and $V_{A,i} = B_0 / \sqrt{n_0 m_i}$, respectively.
 
 
 # Compiling and Executing the Code
 The procedure is very similar to the description available [here](https://github.com/amanotk/pic-nix).  
-Note that the [pic-nix](https://github.com/amanotk/pic-nix) repository will automatically be cloned in the build directory with the following procedure.
+Note that the [pic-nix](https://github.com/amanotk/pic-nix) repository will automatically be cloned in the build directory using the following procedure.  
+Alternatively, if you want to use an existing `pic-nix` source directory in the local filesystem, you can do so by specifying `-DPICNIX_DIR=/path/to/pic-nix/dir` in the `cmake` command line.
 
 ## Clone
 Clone the repository via:
@@ -62,7 +65,6 @@ $ cmake -S . -B build \
 $ cmake --build build
 ```
 The executable file will be found in the `build` directory.
-
 
 ## Run
 

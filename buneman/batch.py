@@ -75,11 +75,15 @@ class Run(analysis.Run):
     def linear_theory(self):
         Nx = self.data["Nx"]
         delh = self.data["delh"]
+        qm = 1.0
+        wp = self.data["wp"]
+        cc = self.data["cc"]
         tt = self.data["tt"]
         uf = self.data["uf"]
+        e0 = cc * wp / qm
 
         # take Fourier transform for transverse B-field in complex representation
-        ex = uf[..., 0].mean(axis=(1, 2))
+        ex = uf[..., 0].mean(axis=(1, 2)) / e0
         kk = np.fft.fftfreq(Nx, delh) * 2 * np.pi
         ek = np.fft.fft(ex, axis=-1) / Nx
 
@@ -196,8 +200,11 @@ class Run(analysis.Run):
         up = self.read_particle_at(self.step_particle[index_p])
 
         xc = self.xc
+        qm = 1.0
         wp = self.data["wp"]
-        wc = self.data["wc"]
+        cc = self.data["cc"]
+        n0 = wp**2 / qm**2
+        e0 = cc * wp / qm
         mime = self.data["mime"]
         binx = [0] * 3
         biny = [0] * 3
@@ -233,7 +240,6 @@ class Run(analysis.Run):
             axs[i] = fig.add_subplot(gridspec[i, 0])
 
         ## density
-        n0 = wp**2 / wc**2
         ne = um[..., 0, 0].mean(axis=(0, 1)) / n0
         ni = (um[..., 1, 0] + um[..., 2, 0]).mean(axis=(0, 1)) / (mime * n0)
         plt.sca(axs[0])
@@ -244,7 +250,7 @@ class Run(analysis.Run):
             axs[0].set_ylim(ylim0)
 
         ## electric field
-        ex = uf[..., 0].mean(axis=(0, 1))
+        ex = uf[..., 0].mean(axis=(0, 1)) / e0
         plt.sca(axs[1])
         plt.plot(xc, ex, "k-")
         axs[1].set_ylabel(r"$E_x$")
@@ -311,7 +317,7 @@ def doit_job(profile, prefix, fps, cleanup):
         ion=dict(binx=ibinx, biny=ibiny),
         xlim=(0, run.Nx * run.delh),
         ylim0=(0.5, 1.5),
-        ylim1=(-1.25, +1.25),
+        ylim1=(-1.2e-1, +1.2e-1),
     )
     for step in run.step_particle:
         fig = run.summary(step, **kwargs)

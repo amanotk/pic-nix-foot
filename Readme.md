@@ -78,7 +78,7 @@ $ cd buneman
 and run the code, for instance, via:
 ```
 $ export OMP_NUM_THREADS=2
-$ mpiexec -n 8 ../main.out -e 86400 -t 200 -c config.json
+$ mpiexec -n 8 ../main.out -e 86400 -t 200 -c config.toml
 ```
 The data files are written to `data` directory by default.  
 
@@ -95,7 +95,7 @@ This example provides a setup for an instability where an ion beam propagating p
 
 Run with the same procedure with `buneman`, but this time with the following command to run up to $\omega_{pe} t = 5000$
 ```
-$ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.json
+$ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.toml
 ```
 The rest is the same as `buneman`.
 For details of the problem, see Hoshino & Terasawa (1985).

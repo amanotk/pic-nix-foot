@@ -14,14 +14,6 @@ if(MPI_THREAD_MULTIPLE)
     add_compile_definitions(HAS_MPI_THREAD_MULTIPLE)
 endif()
 
-# order of particle shape function
-set(PICNIX_SHAPE_ORDER 2 CACHE STRING "Order of particle shape function")
-add_compile_definitions(PICNIX_SHAPE_ORDER=${PICNIX_SHAPE_ORDER})
-
-if(NOT(PICNIX_SHAPE_ORDER GREATER_EQUAL 1 AND PICNIX_SHAPE_ORDER LESS_EQUAL 4))
-  message(FATAL_ERROR "PICNIX_SHAPE_ORDER must be between 1 and 4.")
-endif()
-
 # pic-nix as an external project
 include(FetchContent)
 
@@ -59,7 +51,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PICNIX_DIR})
 
 # link library
 target_link_libraries(${PROJECT_NAME} std::filesystem)
-target_link_libraries(${PROJECT_NAME} nix expic)
+target_link_libraries(${PROJECT_NAME} pic nix)
 
 # copy
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/alfven DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

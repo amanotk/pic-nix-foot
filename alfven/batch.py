@@ -16,25 +16,42 @@ plt.rcParams.update({"font.size": 12})
 
 if "PICNIX_DIR" in os.environ:
     sys.path.append(str(pathlib.Path(os.environ["PICNIX_DIR"]) / "script"))
-import analysis
+import picnix
 
 # result of linear analysis
 LINEAR_THEORY_NPZ = "alfven-linear-theory.npz"
 
 
-class Run(analysis.Run):
+class Run(picnix.Run):
     def __init__(self, profile):
         super().__init__(profile)
 
         # read and store all data
-        Nstep = len(self.file_field)
+        Nstep = len(self.get_step("field"))
+        Ns = self.Ns
+        Nx = self.Nx
+        Ny = self.Ny
+        Nz = self.Nz
+        tt = np.zeros((Nstep,), dtype=np.float64)
+        uf = np.zeros((Nstep, Nz, Ny, Nx, 6), dtype=np.float64)
+        um = np.zeros((Nstep, Nz, Ny, Nx, Ns, 14), dtype=np.float64)
+
+        # read
+        for i, step in enumerate(self.get_step("field")):
+            data = self.read_at("field", step)
+            tt[i] = self.get_time_at("field", step)
+            uf[i, ...] = data["uf"]
+            um[i, ...] = data["um"]
+
+        # store as dict
+        self.data = dict(
+            tt=tt,
+            uf=uf,
+            um=um,
+        )
+
+    def linear_theory(self):
         parameter = self.config["parameter"]
-        Ns = parameter["Ns"]
-        Nx = parameter["Nx"]
-        Ny = parameter["Ny"]
-        Nz = parameter["Nz"]
-        delt = parameter["delt"]
-        delh = parameter["delh"]
         cc = parameter["cc"]
         wp = parameter["wp"]
         mime = parameter["mime"]
@@ -42,53 +59,18 @@ class Run(analysis.Run):
         b0 = cc * np.sqrt(sigma)
         vai = cc * np.sqrt(sigma / mime)
         wci = wp * np.sqrt(sigma) / mime
-        tt = np.zeros((Nstep,), dtype=np.float64)
-        uf = np.zeros((Nstep, Nz, Ny, Nx, 6), dtype=np.float64)
-        um = np.zeros((Nstep, Nz, Ny, Nx, Ns, 11), dtype=np.float64)
 
-        # read
-        for i in range(Nstep):
-            step = self.step_field[i]
-            data = self.read_field_at(step)
-            tt[i] = self.get_field_time_at(step)
-            uf[i, ...] = data["uf"]
-            um[i, ...] = data["um"]
-
-        # store as dict
-        self.data = dict(
-            Nx=Nx,
-            Ny=Ny,
-            Nz=Nz,
-            delt=delt,
-            delh=delh,
-            cc=cc,
-            wp=wp,
-            mime=mime,
-            sigma=sigma,
-            b0=b0,
-            vai=vai,
-            wci=wci,
-            xc=self.xc,
-            tt=tt,
-            uf=uf,
-            um=um,
-        )
-
-    def linear_theory(self):
-        Nx = self.data["Nx"]
-        delh = self.data["delh"]
-        b0 = self.data["b0"]
-        vai = self.data["vai"]
-        wci = self.data["wci"]
         tt = self.data["tt"] * wci
         uf = self.data["uf"]
+        Nx = self.Nx
+        delh = self.delh
 
         # take Fourier transform for transverse B-field in complex representation
         bt = (uf[..., 4] - 1j * uf[..., 5]).mean(axis=(1, 2)) / b0
         kk = np.fft.fftfreq(Nx, delh / (vai / wci)) * 2 * np.pi
         bk = np.fft.fft(bt, axis=-1) / Nx
 
-        # result of linear dispersion analysis
+        # result of linear dispersion picnix
         disp = np.load(LINEAR_THEORY_NPZ)
 
         tzero = 10.0
@@ -133,8 +115,13 @@ class Run(analysis.Run):
         return fig
 
     def energy_history(self):
-        wci = self.data["wci"]
-        cc = self.data["cc"]
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
+        wp = parameter["wp"]
+        mime = parameter["mime"]
+        sigma = parameter["sigma"]
+        wci = wp * np.sqrt(sigma) / mime
+
         tt = self.data["tt"] * wci
         uf = self.data["uf"]
         um = self.data["um"]
@@ -188,11 +175,17 @@ class Run(analysis.Run):
         return fig
 
     def helicity_decomposition(self):
-        Nx = self.data["Nx"]
-        b0 = self.data["b0"]
-        vai = self.data["vai"]
-        wci = self.data["wci"]
-        xc = self.data["xc"] / (vai / wci)
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
+        wp = parameter["wp"]
+        mime = parameter["mime"]
+        sigma = parameter["sigma"]
+        b0 = cc * np.sqrt(sigma)
+        vai = cc * np.sqrt(sigma / mime)
+        wci = wp * np.sqrt(sigma) / mime
+
+        Nx = self.Nx
+        xc = self.xc / (vai / wci)
         tt = self.data["tt"] * wci
         uf = self.data["uf"]
 
@@ -276,12 +269,18 @@ class Run(analysis.Run):
         return fig
 
     def velocity_distribution(self, step, vmin=None, vmax=None):
-        vai = self.data["vai"]
-        wci = self.data["wci"]
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
+        wp = parameter["wp"]
+        mime = parameter["mime"]
+        sigma = parameter["sigma"]
+        vai = cc * np.sqrt(sigma / mime)
+        wci = wp * np.sqrt(sigma) / mime
 
         # read and plot velocity distribution function
-        up = self.read_particle_at(step)
-        tp = self.get_particle_time_at(step) * wci
+        tp = self.get_time_at("particle", step) * wci
+        particle = self.read_at("particle", step)
+        up = [particle["up00"], particle["up01"], particle["up02"]]
 
         # calculate f(v)
         vx = []
@@ -291,8 +290,9 @@ class Run(analysis.Run):
             vy.append(up[i][:, 4] / vai)
         vx = np.concatenate(vx)
         vy = np.concatenate(vy)
-        hist2d = analysis.Histogram2D(vx, vy, (-2.0, +4.0, 151), (-3.0, +3.0, 151))
+        hist2d = picnix.Histogram2D(vx, vy, (-2.0, +4.0, 151), (-3.0, +3.0, 151))
         X, Y, Z = hist2d.pcolormesh_args()
+        Z = Z / np.sum(Z)
         vmax = 1.0e-2 if vmax is None else vmax
         vmin = vmax * 1.0e-3 if vmin is None else vmin
         norm = mpl.colors.LogNorm(vmin=vmin, vmax=vmax)
@@ -364,12 +364,12 @@ def doit_job(profile, prefix, fps, cleanup):
     plt.close(fig)
 
     # for all snapshots
-    for step in run.step_particle:
+    for step in run.get_step("particle"):
         fig = run.velocity_distribution(step)
         fig.savefig("{:s}-vdf-{:08d}.png".format(prefix, step))
         plt.close(fig)
     # convert to mp4
-    analysis.convert_to_mp4("{:s}-vdf".format(prefix), fps, cleanup)
+    picnix.convert_to_mp4("{:s}-vdf".format(prefix), fps, cleanup)
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ plt.rcParams.update({"font.size": 12})
 
 if "PICNIX_DIR" in os.environ:
     sys.path.append(str(pathlib.Path(os.environ["PICNIX_DIR"]) / "script"))
-import analysis
+import picnix
 
 # result of linear analysis
 LINEAR_THEORY_NPZ = os.path.join(
@@ -24,63 +24,44 @@ LINEAR_THEORY_NPZ = os.path.join(
 )
 
 
-class Run(analysis.Run):
+class Run(picnix.Run):
     def __init__(self, profile):
         super().__init__(profile)
 
         # read and store all data
-        Nstep = len(self.file_field)
-        parameter = self.config["parameter"]
-        Ns = parameter["Ns"]
-        Nx = parameter["Nx"]
-        Ny = parameter["Ny"]
-        Nz = parameter["Nz"]
-        delt = parameter["delt"]
-        delh = parameter["delh"]
-        cc = parameter["cc"]
-        wp = parameter["wp"]
-        mime = parameter["mime"]
-        sigma = parameter["sigma"]
-        wc = wp * np.sqrt(sigma)
+        Nstep = len(self.get_step("field"))
+        Ns = self.Ns
+        Nx = self.Nx
+        Ny = self.Ny
+        Nz = self.Nz
         tt = np.zeros((Nstep,), dtype=np.float64)
         uf = np.zeros((Nstep, Nz, Ny, Nx, 6), dtype=np.float64)
-        um = np.zeros((Nstep, Nz, Ny, Nx, Ns, 11), dtype=np.float64)
+        um = np.zeros((Nstep, Nz, Ny, Nx, Ns, 14), dtype=np.float64)
 
         # read
-        for i in range(Nstep):
-            step = self.step_field[i]
-            data = self.read_field_at(step)
-            tt[i] = self.get_field_time_at(step)
+        for i, step in enumerate(self.get_step("field")):
+            data = self.read_at("field", step)
+            tt[i] = self.get_time_at("field", step)
             uf[i, ...] = data["uf"]
             um[i, ...] = data["um"]
 
         # store as dict
         self.data = dict(
-            Nx=Nx,
-            Ny=Ny,
-            Nz=Nz,
-            delt=delt,
-            delh=delh,
-            cc=cc,
-            wp=wp,
-            wc=wc,
-            mime=mime,
-            sigma=sigma,
-            xc=self.xc,
             tt=tt,
             uf=uf,
             um=um,
         )
 
     def linear_theory(self):
-        Nx = self.data["Nx"]
-        delh = self.data["delh"]
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
         qm = 1.0
-        wp = self.data["wp"]
-        cc = self.data["cc"]
+        wp = parameter["wp"]
+        e0 = cc * wp / qm
         tt = self.data["tt"]
         uf = self.data["uf"]
-        e0 = cc * wp / qm
+        Nx = self.Nx
+        delh = self.delh
 
         # take Fourier transform for transverse B-field in complex representation
         ex = uf[..., 0].mean(axis=(1, 2)) / e0
@@ -131,9 +112,9 @@ class Run(analysis.Run):
         return fig
 
     def energy_history(self):
-        wp = self.data["wp"]
-        cc = self.data["cc"]
-        tt = self.data["tt"] * wp
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
+        tt = self.data["tt"]
         uf = self.data["uf"]
         um = self.data["um"]
 
@@ -186,26 +167,31 @@ class Run(analysis.Run):
         return fig
 
     def summary(self, step, **kwargs):
+        parameter = self.config["parameter"]
+        cc = parameter["cc"]
+        wp = parameter["wp"]
+        mime = parameter["mime"]
+        xc = self.xc
+        qm = 1.0
+        n0 = wp**2 / qm**2
+        e0 = cc * wp / qm
+
         # find index for the same time
-        tt = self.get_particle_time_at(step)
-        index_p = np.argmin(np.abs(self.time_particle - tt))
-        index_f = np.argmin(np.abs(self.time_field - tt))
+        tt = self.get_time_at("particle", step)
+        index_p = np.argmin(np.abs(self.get_time("particle") - tt))
+        index_f = np.argmin(np.abs(self.get_time("field") - tt))
+        step_p = self.get_step("particle")[index_p]
+        step_f = self.get_step("field")[index_f]
 
         # read field
-        data = self.read_field_at(self.step_field[index_f])
+        data = self.read_at("field", step_f)
         uf = data["uf"]
         um = data["um"]
 
         # read particle
-        up = self.read_particle_at(self.step_particle[index_p])
+        particle = self.read_at("particle", step_p)
+        up = [particle["up00"], particle["up01"], particle["up02"]]
 
-        xc = self.xc
-        qm = 1.0
-        wp = self.data["wp"]
-        cc = self.data["cc"]
-        n0 = wp**2 / qm**2
-        e0 = cc * wp / qm
-        mime = self.data["mime"]
         binx = [0] * 3
         biny = [0] * 3
         try:
@@ -258,7 +244,7 @@ class Run(analysis.Run):
             axs[1].set_ylim(ylim1)
 
         ## electron phase space
-        fvxe = analysis.Histogram2D(up[0][:, 0], up[0][:, 3], binx[0], biny[0])
+        fvxe = picnix.Histogram2D(up[0][:, 0], up[0][:, 3], binx[0], biny[0])
         Xe, Ye, Ze = fvxe.pcolormesh_args()
         plt.sca(axs[2])
         plt.pcolormesh(Xe, Ye, Ze, shading="nearest")
@@ -269,8 +255,8 @@ class Run(analysis.Run):
         plt.colorbar(cax=cax, format=fmt, label=r"$f_e(x, v_x)$")
 
         ## ion phase space
-        fvx1 = analysis.Histogram2D(up[1][:, 0], up[1][:, 3], binx[2], biny[2])
-        fvx2 = analysis.Histogram2D(up[2][:, 0], up[2][:, 3], binx[2], biny[2])
+        fvx1 = picnix.Histogram2D(up[1][:, 0], up[1][:, 3], binx[2], biny[2])
+        fvx2 = picnix.Histogram2D(up[2][:, 0], up[2][:, 3], binx[2], biny[2])
         x1, y1, z1 = fvx1.pcolormesh_args()
         x2, y2, z2 = fvx2.pcolormesh_args()
         Xi = x1
@@ -319,12 +305,12 @@ def doit_job(profile, prefix, fps, cleanup):
         ylim0=(0.5, 1.5),
         ylim1=(-1.2e-1, +1.2e-1),
     )
-    for step in run.step_particle:
+    for step in run.get_step("particle"):
         fig = run.summary(step, **kwargs)
         fig.savefig("{:s}-summary-{:08d}.png".format(prefix, step))
         plt.close(fig)
     # convert to mp4
-    analysis.convert_to_mp4("{:s}-summary".format(prefix), fps, cleanup)
+    picnix.convert_to_mp4("{:s}-summary".format(prefix), fps, cleanup)
 
 
 if __name__ == "__main__":

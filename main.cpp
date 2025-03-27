@@ -1,23 +1,21 @@
 // -*- C++ -*-
 
-#include "diagnoser.hpp"
-#include "expic3d.hpp"
 #include "nix/random.hpp"
-
-constexpr int order = PICNIX_SHAPE_ORDER;
+#include "pic_application.hpp"
+#include "pic_chunk.hpp"
+#include "pic_diag.hpp"
 
 class MainChunk;
 class MainApplication;
-using MainDiagnoser = Diagnoser;
 
-class MainChunk : public ExChunk3D<order>
+class MainChunk : public PicChunk
 {
 public:
-  using ExChunk3D<order>::ExChunk3D; // inherit constructors
+  using PicChunk::PicChunk; // inherit constructors
 
   virtual void setup(json& config) override
   {
-    ExChunk3D<order>::setup(config);
+    PicChunk::setup(config);
 
     // check validity of assumptions
     {
@@ -101,7 +99,7 @@ public:
       this->set_mpi_buffer(mpibufvec[BoundaryMom], 0, 0, sizeof(float64) * Ns * 11);
 
       // setup for Friedman filter
-      this->setup_friedman_filter();
+      this->init_friedman();
     }
 
     //
@@ -118,9 +116,9 @@ public:
       mj_ion.push_back(nix::MaxwellJuttner(vtr * vtr, udr));
 
       {
-        int   nz  = dims[0] + 2 * Nb;
-        int   ny  = dims[1] + 2 * Nb;
-        int   nx  = dims[2] + 2 * Nb;
+        int   nz  = dims[0] + 2 * boundary_margin;
+        int   ny  = dims[1] + 2 * boundary_margin;
+        int   nx  = dims[2] + 2 * boundary_margin;
         int   mp  = nppc * dims[0] * dims[1] * dims[2];
         int   mp1 = mp * (1 - nref);
         int   mp2 = mp - mp1;
@@ -200,21 +198,18 @@ public:
 
       // initial sort
       this->sort_particle(up);
-
-      // allocate MPI buffer for particle
-      setup_particle_mpi_buffer(option["mpi_buffer_fraction"].get<float64>());
     }
   }
 };
 
-class MainApplication : public ExPIC3D<MainChunk, MainDiagnoser>
+class MainApplication : public PicApplication
 {
 public:
-  using ExPIC3D<MainChunk, MainDiagnoser>::ExPIC3D; // inherit constructors
+  using PicApplication::PicApplication; // inherit constructors
 
-  std::unique_ptr<MainChunk> create_chunk(const int dims[], int id) override
+  std::unique_ptr<chunk_type> create_chunk(const int dims[], const bool has_dim[], int id) override
   {
-    return std::make_unique<MainChunk>(dims, id);
+    return std::make_unique<MainChunk>(dims, has_dim, id);
   }
 };
 

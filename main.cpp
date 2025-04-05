@@ -5,8 +5,7 @@
 #include "pic_chunk.hpp"
 #include "pic_diag.hpp"
 
-class MainChunk;
-class MainApplication;
+using MainApplication = PicApplication;
 
 class MainChunk : public PicChunk
 {
@@ -116,9 +115,6 @@ public:
       mj_ion.push_back(nix::MaxwellJuttner(vtr * vtr, udr));
 
       {
-        int   nz  = dims[0] + 2 * boundary_margin;
-        int   ny  = dims[1] + 2 * boundary_margin;
-        int   nx  = dims[2] + 2 * boundary_margin;
         int   mp  = nppc * dims[0] * dims[1] * dims[2];
         int   mp1 = mp * (1 - nref);
         int   mp2 = mp - mp1;
@@ -127,19 +123,19 @@ public:
         up.resize(Ns);
 
         // electron
-        up[0]     = std::make_shared<ParticleType>(2 * mp, nz * ny * nx);
+        up[0]     = std::make_shared<ParticleType>(2 * mp, *this);
         up[0]->m  = me;
         up[0]->q  = qe;
         up[0]->Np = mp;
 
         // incoming ion
-        up[1]     = std::make_shared<ParticleType>(2 * mp1, nz * ny * nx);
+        up[1]     = std::make_shared<ParticleType>(2 * mp1, *this);
         up[1]->m  = mi;
         up[1]->q  = qi;
         up[1]->Np = mp1;
 
         // reflected ion
-        up[2]     = std::make_shared<ParticleType>(2 * mp2, nz * ny * nx);
+        up[2]     = std::make_shared<ParticleType>(2 * mp2, *this);
         up[2]->m  = mi;
         up[2]->q  = qi;
         up[2]->Np = mp2;
@@ -202,12 +198,10 @@ public:
   }
 };
 
-class MainApplication : public PicApplication
+class MainInterface : public PicApplicationInterface
 {
 public:
-  using PicApplication::PicApplication; // inherit constructors
-
-  std::unique_ptr<chunk_type> create_chunk(const int dims[], const bool has_dim[], int id) override
+  virtual PtrChunk create_chunk(const int dims[], const bool has_dim[], int id) override
   {
     return std::make_unique<MainChunk>(dims, has_dim, id);
   }
@@ -218,7 +212,7 @@ public:
 //
 int main(int argc, char** argv)
 {
-  MainApplication app(argc, argv);
+  MainApplication app(argc, argv, std::make_shared<MainInterface>());
   return app.main();
 }
 

@@ -1,6 +1,7 @@
 # About
 This setup models the dynamics of a collisionless shock transition layer with a three-component homogeneous plasma with the periodic boundary condition in all three directions. The system consists of the reflected ions, the incoming core (upstream) ions, and the background electrons, all represented by isotropic Maxwellian distributions in the rest frame of each component. The simulation frame corresponds to the rest frame of electrons.
 
+Note that the repository is also meant to show an example of implementing a custom setup using [`pic-nix`](https://github.com/amanotk/pic-nix).
 
 # Physical Parameters
 The following parameters should be defined in the configuration file:

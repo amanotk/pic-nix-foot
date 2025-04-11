@@ -30,7 +30,7 @@ else()
   FetchContent_Declare(
     pic-nix
     GIT_REPOSITORY https://github.com/amanotk/pic-nix.git
-    GIT_TAG v0.1.0
+    GIT_TAG v0.1.1
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pic-nix
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pic-nix
   )

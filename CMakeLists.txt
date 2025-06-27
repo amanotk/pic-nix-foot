@@ -19,18 +19,19 @@ include(FetchContent)
 
 set(PICNIX_BUILD_EXAMPLE OFF) # disable building example
 
-if(DEFINED PICNIX_DIR AND EXISTS ${PICNIX_DIR})
-  # use existing pic-nix directory
-  get_filename_component(PICNIX_DIR "${PICNIX_DIR}" ABSOLUTE)
+# pic-nix directory
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/pic-nix")
+  # use local pic-nix directory if exists
+  set(PICNIX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pic-nix")
   add_subdirectory(${PICNIX_DIR} ${CMAKE_BINARY_DIR}/pic-nix)
-  message(STATUS "Using existing pic-nix directory : ${PICNIX_DIR}")
+  message(STATUS "Using local pic-nix directory : ${PICNIX_DIR}")
 else()
-  #  download pic-nix from github
+  # download pic-nix from github
   set(PICNIX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pic-nix)
   FetchContent_Declare(
     pic-nix
     GIT_REPOSITORY https://github.com/amanotk/pic-nix.git
-    GIT_TAG v0.1.1
+    GIT_TAG v0.1.3
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pic-nix
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/pic-nix
   )

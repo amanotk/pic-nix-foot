@@ -76,6 +76,11 @@ public:
       float64 By = b0 * sin(theta / 180 * nix::math::pi) * cos(phi / 180 * nix::math::pi);
       float64 Bz = b0 * sin(theta / 180 * nix::math::pi) * sin(phi / 180 * nix::math::pi);
 
+      // store background B-field for possible background subtraction hack
+      option["bx0_hack"] = Bx;
+      option["by0_hack"] = By;
+      option["bz0_hack"] = Bz;
+
       // memory allocation
       allocate();
 

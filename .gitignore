@@ -7,5 +7,6 @@ compiler.mk
 *.mp4
 *.stdout
 *.stderr
+pic-nix
 build
 __pycache__

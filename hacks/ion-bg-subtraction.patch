@@ -1,0 +1,195 @@
+diff --git a/pic/engine/velocity.hpp b/pic/engine/velocity.hpp
+index e3ebd07..9c948be 100644
+--- a/pic/engine/velocity.hpp
++++ b/pic/engine/velocity.hpp
+@@ -57,6 +57,11 @@ public:
+   float64 cfly;
+   float64 cflz;
+ 
++  // HACK
++  float64 bx0;
++  float64 by0;
++  float64 bz0;
++
+   template <typename T_data>
+   BaseVelocity(const T_data& data, bool has_dim[3])
+   {
+@@ -77,6 +82,11 @@ public:
+     xmin     = data.xlim[0];
+     ymin     = data.ylim[0];
+     zmin     = data.zlim[0];
++
++    // HACK
++    bx0 = 0.0;
++    by0 = 0.0;
++    bz0 = 0.0;
+   }
+ 
+   template <typename T_float>
+@@ -99,13 +109,18 @@ public:
+   }
+ 
+   template <typename T_particle, typename T_array>
+-  void call_scalar_impl(T_particle& up, T_array& uf, float64 delt)
++  void call_scalar_impl(T_particle& up, T_array& uf, float64 delt, json& option)
+   {
+     // cache for WT interpolation
+     cflx = cc * delt / dx;
+     cfly = cc * delt / dy;
+     cflz = cc * delt / dz;
+ 
++    // HACK
++    auto bx0_hack = option.value("bx0_hack", 0.0);
++    auto by0_hack = option.value("by0_hack", 0.0);
++    auto bz0_hack = option.value("bz0_hack", 0.0);
++
+     auto push = [&](T_array& uf, float64 xu[], float64 dt) {
+       // 1D version
+       if constexpr (Dim == 1) {
+@@ -129,6 +144,17 @@ public:
+     for (int is = 0; is < ns; is++) {
+       float64 qmdt = 0.5 * up[is]->q / up[is]->m * delt;
+ 
++      // HACK
++      if (is == 0) {
++        bx0 = 0.0;
++        by0 = 0.0;
++        bz0 = 0.0;
++      } else {
++        bx0 = bx0_hack;
++        by0 = by0_hack;
++        bz0 = bz0_hack;
++      }
++
+       for (int ip = 0; ip < up[is]->Np; ip++) {
+         push(uf, &up[is]->xu(ip, 0), qmdt);
+       }
+@@ -136,7 +162,7 @@ public:
+   }
+ 
+   template <typename T_particle, typename T_array>
+-  void call_vector_impl(T_particle& up, T_array& uf, float64 delt)
++  void call_vector_impl(T_particle& up, T_array& uf, float64 delt, json& option)
+   {
+     using namespace nix;
+     using namespace nix::primitives;
+@@ -151,6 +177,11 @@ public:
+     cfly = cc * delt / dy;
+     cflz = cc * delt / dz;
+ 
++    // HACK
++    auto bx0_hack = option.value("bx0_hack", 0.0);
++    auto by0_hack = option.value("by0_hack", 0.0);
++    auto bz0_hack = option.value("bz0_hack", 0.0);
++
+     auto push = [&](T_array& uf, int iz, int iy, int ix, auto xu[], auto dt) {
+       // 1D version
+       if constexpr (Dim == 1) {
+@@ -182,6 +213,17 @@ public:
+             int     np_simd = (np_cell / simd_f64::size) * simd_f64::size;
+             float64 qmdt    = 0.5 * up[is]->q / up[is]->m * delt;
+ 
++            // HACK
++            if (is == 0) {
++              bx0 = 0.0;
++              by0 = 0.0;
++              bz0 = 0.0;
++            } else {
++              bx0 = bx0_hack;
++              by0 = by0_hack;
++              bz0 = bz0_hack;
++            }
++
+             //
+             // vectorized loop
+             //
+@@ -383,6 +425,11 @@ public:
+     auto by = interp1d<Stencil>(uf, iz0, iy0, hx0, 4, whx, dt);
+     auto bz = interp1d<Stencil>(uf, iz0, iy0, hx0, 5, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ 
+@@ -414,6 +461,11 @@ public:
+     auto by = interp2d<Stencil>(uf, iz0, iy0, hx0, 4, wiy, whx, dt);
+     auto bz = interp2d<Stencil>(uf, iz0, hy0, hx0, 5, why, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ 
+@@ -446,6 +498,11 @@ public:
+     auto by = interp3d<Stencil>(uf, hz0, iy0, hx0, 4, whz, wiy, whx, dt);
+     auto bz = interp3d<Stencil>(uf, iz0, hy0, hx0, 5, wiz, why, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ 
+@@ -473,6 +530,11 @@ public:
+     auto by = interp1d<Stencil>(uf, iz, iy, ix, 4, whx, dt);
+     auto bz = interp1d<Stencil>(uf, iz, iy, ix, 5, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ 
+@@ -504,6 +566,11 @@ public:
+     auto by = interp2d<Stencil>(uf, iz, iy, ix, 4, wiy, whx, dt);
+     auto bz = interp2d<Stencil>(uf, iz, iy, ix, 5, why, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ 
+@@ -539,6 +606,11 @@ public:
+     auto by = interp3d<Stencil>(uf, iz, iy, ix, 4, whz, wiy, whx, dt);
+     auto bz = interp3d<Stencil>(uf, iz, iy, ix, 5, wiz, why, whx, dt);
+ 
++    // HACK
++    bx -= bx0;
++    by -= by0;
++    bz -= bz0;
++
+     push_impl(xu, ex, ey, ez, bx, by, bz);
+   }
+ };
+@@ -552,7 +624,7 @@ public:
+   template <typename T_particle, typename T_array>
+   void operator()(T_particle& up, T_array& uf, float64 delt, json& option)
+   {
+-    this->call_scalar_impl(up, uf, delt);
++    this->call_scalar_impl(up, uf, delt, option);
+   }
+ };
+ 
+@@ -565,7 +637,7 @@ public:
+   template <typename T_particle, typename T_array>
+   void operator()(T_particle& up, T_array& uf, float64 delt, json& option)
+   {
+-    this->call_vector_impl(up, uf, delt);
++    this->call_vector_impl(up, uf, delt, option);
+   }
+ };
+ 

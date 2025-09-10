@@ -47,8 +47,10 @@ Note that the electron and ion Alfven speeds are defined by $V_{A,e} = B_0 / \sq
 
 # Compiling and Executing the Code
 The procedure is very similar to the description available [here](https://github.com/amanotk/pic-nix).  
-Note that the [pic-nix](https://github.com/amanotk/pic-nix) repository will automatically be cloned in the build directory using the following procedure.  
-Alternatively, if you want to use an existing `pic-nix` source directory in the local filesystem, you can do so by specifying `-DPICNIX_DIR=/path/to/pic-nix/dir` in the `cmake` command line.
+Note that the [pic-nix](https://github.com/amanotk/pic-nix) repository will automatically
+be cloned in the build directory using the following procedure.  
+Alternatively, you can manually clone the `pic-nix` repository in the top directory
+and run `cmake` from there.
 
 ## Clone
 Clone the repository via:
@@ -65,7 +67,10 @@ $ cmake -S . -B build \
 	-DCMAKE_CXX_FLAGS="-O3 -fopenmp"
 $ cmake --build build
 ```
-The executable file will be found in the `build` directory.
+The executable file will be found in the `build` directory.  
+If you already have `pic-nix` directory, you can use a pre-configured cache file
+provided in `pic-nix/cmake` directory.  
+See [here](https://github.com/amanotk/pic-nix) for more details.
 
 ## Run
 
@@ -100,6 +105,19 @@ $ mpiexec -n 16 ../main.out -e 86400 -t 5000 -c config.toml
 ```
 The rest is the same as `buneman`.
 For details of the problem, see Hoshino & Terasawa (1985).
+
+
+# Hack
+In some cases, you might want to subtract the Lorentz force associated with
+the uniform background magnetic field acting on ions (but not on electrons).
+This can be done by applying a patch file in an existing `pic-nix` directory
+as follows:
+```bash
+$ cd pic-nix
+$ git apply ../hacks/ion-bg-subtraction.patch
+```
+After applying the patch, you can compile and run the code as usual.  
+Note that ions still feel the fluctuating component of the magnetic field.
 
 
 # References

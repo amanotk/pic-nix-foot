@@ -1,7 +1,7 @@
 # pic-nix-foot
 
 Thin wrapper around [pic-nix](https://github.com/amanotk/pic-nix) that applies
-the ion background B-field subtraction hack and builds the `foot` example.
+the ion background B-field subtraction hack to the `foot` example.
 
 The physics setup, source code, and scenario configurations all live in
 `pic-nix` under `pic/example/foot/`. This repository only provides:
@@ -9,52 +9,36 @@ The physics setup, source code, and scenario configurations all live in
 - `patches/ion-bg-subtraction.patch` — modifies the particle push to subtract
   the uniform background magnetic field from the Lorentz force acting on ions
   (but not electrons). Ions still feel the fluctuating component.
-- `build.sh` — clones pic-nix, applies the patch, and builds the `foot` target.
+- `setup.sh` — clones pic-nix, checks out a given ref, and applies the patch.
 
+The patch is generated against the `develop` branch of pic-nix.
 See `pic-nix/pic/example/foot/README.md` for the physical parameters and
 scenario descriptions.
 
 
 # Usage
 
-## Build
-
-Clone and build:
 ```
 $ git clone git@github.com:amanotk/pic-nix-foot.git
 $ cd pic-nix-foot
-$ ./build.sh
+$ ./setup.sh
 ```
 
-This will clone `pic-nix` into the current directory (or use an existing one
-if `PICNIX_DIR` is set), apply the patch, and build only the `foot` target.
-
-Environment variables:
-- `PICNIX_DIR` — path to an existing pic-nix checkout (default: auto-clone)
-- `PICNIX_REF` — git ref to checkout in pic-nix (default: `develop`)
-- `CMAKE_CXX_COMPILER` — C++ compiler (default: `mpicxx`)
-- `CMAKE_CXX_FLAGS` — compiler flags (default: `-O2 -fopenmp`)
-
-## Run
-
-After building, go to a scenario directory and run:
+This clones `pic-nix` into `./pic-nix` and applies the patch.
+Build the `foot` target yourself:
 ```
-$ cd build/pic/example/foot/<scenario>
-$ mpiexec -n 8 ./main.out -e 86400 -t <duration> -c config.toml
+$ cmake -S pic-nix -B build
+$ cmake --build build --target foot
 ```
 
-Set `PICNIX_DIR` to the pic-nix root and run the quicklook script:
+## Options
+
 ```
-$ python quicklook.py data/profile.msgpack
+$ ./setup.sh -r <ref> -d <directory>
 ```
 
-### Scenarios
-
-| Scenario | Description | Suggested `-t` |
-|----------|-------------|----------------|
-| buneman  | Electrostatic ion-electron beam instability | 200 |
-| alfven   | Electromagnetic ion-cyclotron beam instability | 5000 |
-| weibel   | Weibel instability with magnetized electrons | 5000 |
+- `-r, --ref REF` — pic-nix branch or tag to checkout (default: `develop`)
+- `-d, --dir DIR` — pic-nix clone destination (default: `./pic-nix`)
 
 
 # References

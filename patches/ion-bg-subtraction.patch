@@ -1,8 +1,6 @@
-diff --git a/pic/engine/velocity.hpp b/pic/engine/velocity.hpp
-index e3ebd07..0555018 100644
---- a/pic/engine/velocity.hpp
-+++ b/pic/engine/velocity.hpp
-@@ -57,6 +57,11 @@ public:
+--- a/pic/engine/velocity.hpp	2026-04-23 18:16:24.972644095 +0900
++++ b/pic/engine/velocity.hpp	2026-04-25 22:00:27.773264097 +0900
+@@ -57,6 +57,11 @@
    float64 cfly;
    float64 cflz;
  
@@ -14,7 +12,7 @@ index e3ebd07..0555018 100644
    template <typename T_data>
    BaseVelocity(const T_data& data, bool has_dim[3])
    {
-@@ -77,6 +82,11 @@ public:
+@@ -77,6 +82,11 @@
      xmin     = data.xlim[0];
      ymin     = data.ylim[0];
      zmin     = data.zlim[0];
@@ -26,7 +24,7 @@ index e3ebd07..0555018 100644
    }
  
    template <typename T_float>
-@@ -99,13 +109,18 @@ public:
+@@ -99,13 +109,18 @@
    }
  
    template <typename T_particle, typename T_array>
@@ -46,7 +44,7 @@ index e3ebd07..0555018 100644
      auto push = [&](T_array& uf, float64 xu[], float64 dt) {
        // 1D version
        if constexpr (Dim == 1) {
-@@ -129,6 +144,17 @@ public:
+@@ -129,6 +144,17 @@
      for (int is = 0; is < ns; is++) {
        float64 qmdt = 0.5 * up[is]->q / up[is]->m * delt;
  
@@ -64,7 +62,7 @@ index e3ebd07..0555018 100644
        for (int ip = 0; ip < up[is]->Np; ip++) {
          push(uf, &up[is]->xu(ip, 0), qmdt);
        }
-@@ -136,7 +162,7 @@ public:
+@@ -136,7 +162,7 @@
    }
  
    template <typename T_particle, typename T_array>
@@ -73,7 +71,7 @@ index e3ebd07..0555018 100644
    {
      using namespace nix;
      using namespace nix::primitives;
-@@ -151,6 +177,11 @@ public:
+@@ -151,6 +177,11 @@
      cfly = cc * delt / dy;
      cflz = cc * delt / dz;
  
@@ -85,7 +83,7 @@ index e3ebd07..0555018 100644
      auto push = [&](T_array& uf, int iz, int iy, int ix, auto xu[], auto dt) {
        // 1D version
        if constexpr (Dim == 1) {
-@@ -182,6 +213,17 @@ public:
+@@ -182,6 +213,17 @@
              int     np_simd = (np_cell / simd_f64::size) * simd_f64::size;
              float64 qmdt    = 0.5 * up[is]->q / up[is]->m * delt;
  
@@ -103,7 +101,7 @@ index e3ebd07..0555018 100644
              //
              // vectorized loop
              //
-@@ -383,6 +425,11 @@ public:
+@@ -383,6 +425,11 @@
      auto by = interp1d<Stencil>(uf, iz0, iy0, hx0, 4, whx, dt);
      auto bz = interp1d<Stencil>(uf, iz0, iy0, hx0, 5, whx, dt);
  
@@ -115,7 +113,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  
-@@ -414,6 +461,11 @@ public:
+@@ -414,6 +461,11 @@
      auto by = interp2d<Stencil>(uf, iz0, iy0, hx0, 4, wiy, whx, dt);
      auto bz = interp2d<Stencil>(uf, iz0, hy0, hx0, 5, why, whx, dt);
  
@@ -127,7 +125,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  
-@@ -446,6 +498,11 @@ public:
+@@ -446,6 +498,11 @@
      auto by = interp3d<Stencil>(uf, hz0, iy0, hx0, 4, whz, wiy, whx, dt);
      auto bz = interp3d<Stencil>(uf, iz0, hy0, hx0, 5, wiz, why, whx, dt);
  
@@ -139,7 +137,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  
-@@ -473,6 +530,11 @@ public:
+@@ -473,6 +530,11 @@
      auto by = interp1d<Stencil>(uf, iz, iy, ix, 4, whx, dt);
      auto bz = interp1d<Stencil>(uf, iz, iy, ix, 5, whx, dt);
  
@@ -151,7 +149,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  
-@@ -504,6 +566,11 @@ public:
+@@ -504,6 +566,11 @@
      auto by = interp2d<Stencil>(uf, iz, iy, ix, 4, wiy, whx, dt);
      auto bz = interp2d<Stencil>(uf, iz, iy, ix, 5, why, whx, dt);
  
@@ -163,7 +161,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  
-@@ -539,6 +606,11 @@ public:
+@@ -539,6 +606,11 @@
      auto by = interp3d<Stencil>(uf, iz, iy, ix, 4, whz, wiy, whx, dt);
      auto bz = interp3d<Stencil>(uf, iz, iy, ix, 5, wiz, why, whx, dt);
  
@@ -175,7 +173,7 @@ index e3ebd07..0555018 100644
      push_impl(xu, ex, ey, ez, bx, by, bz);
    }
  };
-@@ -552,7 +624,7 @@ public:
+@@ -552,7 +624,7 @@
    template <typename T_particle, typename T_array>
    void operator()(T_particle& up, T_array& uf, float64 delt, json& option)
    {
@@ -184,7 +182,7 @@ index e3ebd07..0555018 100644
    }
  };
  
-@@ -565,7 +637,7 @@ public:
+@@ -565,7 +637,7 @@
    template <typename T_particle, typename T_array>
    void operator()(T_particle& up, T_array& uf, float64 delt, json& option)
    {
@@ -192,4 +190,18 @@ index e3ebd07..0555018 100644
 +    this->call_vector_impl(up, uf, delt, option);
    }
  };
+ 
+--- a/pic/example/foot/main.cpp	2026-04-25 16:47:49.938736059 +0900
++++ b/pic/example/foot/main.cpp	2026-04-25 22:00:36.452462983 +0900
+@@ -76,6 +76,11 @@
+       float64 By = b0 * sin(theta / 180 * nix::math::pi) * cos(phi / 180 * nix::math::pi);
+       float64 Bz = b0 * sin(theta / 180 * nix::math::pi) * sin(phi / 180 * nix::math::pi);
+ 
++      // store background B-field for background subtraction hack
++      option["bx0_hack"] = Bx;
++      option["by0_hack"] = By;
++      option["bz0_hack"] = Bz;
++
+       // memory allocation
+       allocate();
  
